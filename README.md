@@ -1,0 +1,2 @@
+# spellingci
+Spelling CI Server
