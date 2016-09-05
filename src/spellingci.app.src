@@ -1,0 +1,16 @@
+{application, spellingci, [
+  {description, "Spelling CI Server"},
+  {vsn, "0.1.0"},
+  {id, "spellingci"},
+  {registered, []},
+  {applications, [
+    kernel,
+    stdlib
+  ]},
+  {modules, []},
+  {mod, {spellingci, []}},
+  {maintainers,["Inaka"]},
+  {licenses,["Apache 2.0"]},
+  {links,[{"Github","https://github.com/inaka/spellingci"}]},
+  {build_tools, ["rebar3"]}
+]}.
