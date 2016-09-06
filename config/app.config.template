@@ -1,0 +1,136 @@
+[
+ %% Elvis Server
+ {
+   elvis_server,
+   [{webhook_url, "http://localhost:8080/webhook"},
+    {github_user, ""},
+    %% Paypal info
+    {yearly_fee, 35.00},
+    {paypal_api_url, "api.sandbox.paypal.com"},
+    {paypal_client_id, ""},
+    {paypal_client_secret, ""},
+    {paypal_return_url, ""},
+    {paypal_cancel_url, ""},
+    {paypal_success_url, ""}
+]
+ },
+ %% Elvis
+ {
+   elvis,
+   [
+    {config,
+     [#{dirs => ["src"],
+        filter => "*.erl",
+        rules => [{elvis_style, line_length, #{limit => 80}},
+                  {elvis_style, no_tabs},
+                  {elvis_style, macro_names},
+                  {elvis_style, macro_module_names},
+                  {elvis_style, operator_spaces, #{rules => [{right, ","},
+                                                             {right, "++"},
+                                                             {left, "++"}]}},
+                  {elvis_style, nesting_level, #{level => 3}},
+                  {elvis_style, god_modules, #{limit => 25}},
+                  {elvis_style, no_if_expression},
+                  {elvis_style, invalid_dynamic_call, #{ignore => [elvis]}},
+                  {elvis_style, used_ignored_variable},
+                  {elvis_style, no_behavior_info},
+                  {
+                    elvis_style,
+                    module_naming_convention,
+                    #{regex => "^([a-z][a-z0-9]*_?)*(_SUITE)?$",
+                      ignore => []}
+                  },
+                  {elvis_style, state_record_and_type},
+                  {elvis_style, no_spec_with_records}
+                 ]
+       }
+     ]
+    },
+    %% Basic Auth
+    {github_user, ""},
+    {github_password, ""},
+    %% OAuth
+    {github_scope, "repo,user:email"},
+    {github_client_id, ""},
+    {github_client_secret, ""}
+   ]
+ },
+ %% Sumo DB
+ {
+   sumo_db,
+   [
+    {log_queries, false},
+    {query_timeout, 30000},
+    {storage_backends,
+     [{elvis_mysql_backend,
+       sumo_backend_mysql,
+       [{username, "root"},
+        {password, ""},
+        {host,     "127.0.0.1"},
+        {port,     3306},
+        {database, "elvis_test"},
+        {poolsize, 10}]
+      }
+     ]
+    },
+    {stores,
+     [{elvis_mysql,
+       sumo_store_mysql,
+       [{storage_backend, elvis_mysql_backend},
+        {workers, 10}]
+      }
+     ]
+    },
+    {docs,
+     [
+      {elvis_server_users, elvis_mysql},
+      {elvis_server_repos, elvis_mysql},
+      {elvis_server_subscriptions, elvis_mysql},
+      {elvis_server_organisations, elvis_mysql}
+     ]
+    },
+    {events,
+     []
+    }
+   ]
+ },
+ %% Cowboy
+ {
+   cowboy,
+   [
+    {http_port, 8080},
+    {http_listener_count, 10}
+   ]
+ },
+ %% Lager
+ {
+   lager,
+   [
+    {colored, true},
+    {async_threshold, 200},
+    {async_threshold_window, 5},
+    {error_logger_hwm, 500},
+    {handlers,
+     [
+      {lager_console_backend,
+       [debug,
+        {lager_default_formatter,
+         [
+          color, time, " [", severity, "]",
+          " [", {module, ""}, ":", {function, ""}, ":", {line, ""}, "] ",
+          message, "\e[0m\n"
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+ },
+ {
+   sasl,
+   [
+    {sasl_error_logger, false}
+   ]
+ }
+].
