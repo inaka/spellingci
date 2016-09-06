@@ -1,8 +1,8 @@
 ## Name of the node
--name spellingci_server@172.2.0.10
+-name spellingci@172.2.0.10
 
 ## Cookie for distributed erlang
--setcookie spellingci_server
+-setcookie spellingci
 
 ## Heartbeat management; auto-restarts VM if it dies or becomes unresponsive
 ## (Disabled by default..use with caution!)
