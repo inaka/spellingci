@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  web:
+    build: .
+    command: monit -I
+    env_file: .env
+    container_name: spellingci_web
+    ports:
+     - "9090:8080"
+    networks:
+      app_net:
+        ipv4_address: 172.2.0.10
+      default:
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.2.0.0/24
+        gateway: 172.2.0.
