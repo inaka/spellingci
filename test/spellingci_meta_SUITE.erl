@@ -6,7 +6,7 @@
         , [ all/0
           , xref/1
           , dialyzer/1
-          , elvis/1
+          , spellingci/1
           ]
         }]).
 
