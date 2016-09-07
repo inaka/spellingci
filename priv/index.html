@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html ng-app="spellingCI">
+  <head>
+      <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+      <META HTTP-EQUIV="Expires" CONTENT="-1">
+      <meta charset="utf-8">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+      <link rel="stylesheet" href="assets/css/spellingci.css">
+      <title>Spelling CI</title>
+  </head>
+
+  <body role="contentinfo" >
+
+    <!-- Fixed navbar -->
+    <nav id="header" class="navbar">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#/">Spelling CI</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container" role="main">
+        <div ng-view></div>
+    </div>
+
+    <div class="container">
+        <nav id="footer" class="navbar navbar-fixed-bottom">
+            <div class="row text-center">
+                <a href="https://github.com/inaka/spellingci" target="_blank" class="link-source"><img title="view the source code" src="assets/img/github.png"/></a>
+            </div>
+            <div class="row text-center">
+                <span>Powered by <a href="http://inaka.net" target="_blank" class="link-source">Inaka</a></span>
+            </div>
+        </nav>
+    </div>
+
+    <script src="assets/javascript/lib/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+    <script src="assets/javascript/lib/ui-bootstrap.min.js"></script>
+    <script src="assets/javascript/lib/angular-route.js"></script>
+    <script src="assets/javascript/lib/angular-resource.js"></script>
+    <script src="assets/javascript/spellingci.js"></script>
+    <script src="assets/javascript/routes.js"></script>
+    <!-- Controllers -->
+
+    <!-- Services -->
+
+</body>
+</html>
