@@ -1,0 +1,26 @@
+[
+  %% Spellingci
+  { spellingci,
+    [
+     {http_port, 8080},
+     {http_listener_count, 10}
+    ]
+  },
+  %% sumo_db
+  {sumo_db, [
+    {wpool_opts, [{overrun_warning, 100}]},
+    {log_queries, true},
+    {query_timeout, 30000},
+    {storage_backends, [
+      {spellingci_backend_mnesia, sumo_backend_mnesia, []}
+    ]},
+    {stores, [
+      {sumo_test_mnesia, sumo_store_mnesia, [
+        {workers, 10},
+        {ram_copies, here},
+        {majority, false}
+      ]}
+    ]},
+    {docs, []}
+   ]}
+].

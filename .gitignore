@@ -12,3 +12,5 @@ _build/
 *_plt
 .DS_Store
 doc/
+log/
+compile_commands.json

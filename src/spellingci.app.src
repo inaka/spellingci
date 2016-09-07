@@ -5,12 +5,13 @@
   {registered, []},
   {applications, [
     kernel,
-    stdlib
+    stdlib,
+    mnesia,
+    sumo_rest
   ]},
   {modules, []},
   {mod, {spellingci, []}},
-  {maintainers,["Inaka"]},
-  {licenses,["Apache 2.0"]},
-  {links,[{"Github","https://github.com/inaka/spellingci"}]},
-  {build_tools, ["rebar3"]}
+  {start_phases , [
+    {start_cowboy_listeners, []}
+  ]}
 ]}.

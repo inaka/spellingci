@@ -24,9 +24,9 @@
 
 -export([ start/0
         , start/2
-        ]).
--export([ stop/0
+        , stop/0
         , stop/1
+        , start_phase/3
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,3 +54,35 @@ start(_Type, _Args) -> {ok, self()}.
 
 -spec stop(State::[]) -> ok.
 stop(_State) -> ok.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% START PHASES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% @private
+-spec start_phase(atom(), StartType::application:start_type(), []) ->
+  ok | {error, _}.
+start_phase(start_cowboy_listeners, _StartType, []) ->
+  {ok, Port} = application:get_env(spellingci, http_port),
+  {ok, ListenerCount} = application:get_env(spellingci, http_listener_count),
+
+  % Get the trails for each handler
+  Trails = [ {"/", cowboy_static, {file, "priv/index.html"}}
+           , {"/assets/[...]", cowboy_static, {dir, "priv/assets"}}
+           ],
+  % Store them so Cowboy is able to get them
+  trails:store(Trails),
+  % Set server routes
+  Dispatch = trails:single_host_compile(Trails),
+  % Set the options for the TCP layer
+  TransOpts = [{port, Port}],
+  % Set the options for the HTTP layer
+  ProtoOpts = [{env, [{dispatch, Dispatch}, {compress, true}]}],
+  % Start Cowboy HTTP server
+  case cowboy:start_http( spellingci_server
+                        , ListenerCount
+                        , TransOpts
+                        , ProtoOpts) of
+    {ok, _} -> ok;
+    {error, {already_started, _}} -> ok
+  end.
