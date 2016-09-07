@@ -6,7 +6,7 @@
         , end_per_suite/1
         ]).
 
--export([ cover/1
+-export([ connect/1
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -16,7 +16,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -spec all() -> [atom()].
-all() ->  [ cover
+all() ->  [ connect
           ].
 
 -spec init_per_suite(config()) -> config().
@@ -33,5 +33,18 @@ end_per_suite(Config) ->
 %% Test Cases
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec cover(config()) -> ok.
-cover(_Config) -> ok.
+-spec connect(config()) -> ok.
+connect(_Config) ->
+  ok = test_connection(),
+  ok.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Internal Functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+-spec test_connection() -> ok.
+test_connection() ->
+  {ok, Port} = application:get_env(spellingci, http_port),
+  {ok, Pid} = fusco:start("http://localhost:" ++ integer_to_list(Port), []),
+  ok = fusco:connect(Pid),
+  ok.

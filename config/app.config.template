@@ -1,4 +1,11 @@
 [
+  %% Spellingci
+  { spellingci,
+    [
+     {http_port, 8080},
+     {http_listener_count, 10}
+    ]
+  },
   %% sumo_db
   {sumo_db, [
     {wpool_opts, [{overrun_warning, 100}]},
@@ -15,14 +22,5 @@
       ]}
     ]},
     {docs, []}
-   ]},
-
-   %% Cowboy
- {
-   cowboy,
-   [
-    {http_port, 8080},
-    {http_listener_count, 10}
-   ]
- }
+   ]}
 ].
