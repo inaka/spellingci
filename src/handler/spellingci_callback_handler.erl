@@ -9,15 +9,18 @@
 %trails
 -export([trails/0]).
 
+-type state() :: map().
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Trails
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+-spec trails() -> trails:trails().
 trails() ->
   MsgTrailsMetadata =
     #{ get => #{ desc => "Github oauth callback"
-               , 'content-type' => "text/plain"}
+               , 'content-type' => "text/plain"
+               }
      },
   [trails:trail("/oauth/callback", ?MODULE, [], MsgTrailsMetadata)].
 
@@ -25,9 +28,14 @@ trails() ->
 %%% Handler Callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% @hidden
+-spec init({atom(), atom()}, cowboy_req:req(), term()) ->
+  {ok, cowboy_req:req(), state()}.
 init(_Type, Req, _Opts) ->
   {ok, Req, #{}}.
 
+%% @hidden
+-spec handle(cowboy_req:req(), state()) -> {ok, cowboy_req:req(), state()}.
 handle(Req, State) ->
   Headers = [{<<"content-type">>, <<"text/plain">>}],
   case cowboy_req:qs_val(<<"code">>, Req) of
@@ -37,7 +45,7 @@ handle(Req, State) ->
       {ok, Req3, State};
     {Code, Req2} ->
       case access_token(Code) of
-        {ok, Token} ->
+        {ok, _Token} ->
           Url = "/",
           RedirHeaders = [{<<"Location">>, Url}],
           {ok, Req3} = cowboy_req:reply(302, RedirHeaders, Req2),
@@ -50,6 +58,7 @@ handle(Req, State) ->
       end
   end.
 
+-spec terminate(term(), cowboy_req:req(), state()) -> ok.
 terminate(_Reason, _Req, _State) ->
   ok.
 
@@ -62,24 +71,22 @@ access_token(Code) ->
   {ok, ClientSecret} = application:get_env(spellingci, github_client_secret),
   _ = lager:log(info, self, "~p - ~p", [ClientId, ClientSecret]),
   Url = "https://github.com/login/oauth/access_token",
-  Headers = [{"Content-Type", "application/x-www-form-urlencoded"},
-             {"Accept", "application/json"}],
+  Headers = [{<<"Content-Type">>, <<"application/x-www-form-urlencoded">>},
+             {<<"Accept">>, <<"application/json">>}],
   Body = ["code=", Code,
           "&client_id=", ClientId,
           "&client_secret=", ClientSecret],
   Opts = [{ssl_options, [{depth, 0}]}],
-  case ibrowse:send_req(Url, Headers, post, Body, Opts) of
-    {ok, "200", _RespHeaders, RespBody} ->
+  case hackney:request(post, Url, Headers, Body, Opts) of
+    {ok, 200, _RespHeaders, Client} ->
+      {ok, RespBody} = hackney:body(Client),
       JsonBody = jiffy:decode(RespBody, [return_maps]),
-      case maps:is_key(<<"access_token">>, JsonBody) of
-        true ->
-          Token = maps:get(<<"access_token">>, JsonBody),
-          {ok, Token};
-        false ->
-          {error, RespBody}
+      case maps:get(<<"access_token">>, JsonBody, undefined) of
+        undefined -> {error, RespBody};
+        Token     -> {ok, Token}
       end;
     {ok, Status, _, _} ->
-      {error, Status};
+      {error, integer_to_list(Status)};
     {error, Reason} ->
       {error, Reason}
   end.

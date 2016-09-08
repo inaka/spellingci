@@ -23,13 +23,11 @@ all() ->  [ connect
 
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
-  hackney:start(),
   ok = spellingci:start(),
   Config.
 
 -spec end_per_suite(config()) -> config().
 end_per_suite(Config) ->
-  hackney:stop(),
   ok = spellingci:stop(),
   Config.
 
