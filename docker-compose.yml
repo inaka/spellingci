@@ -20,4 +20,4 @@ networks:
       driver: default
       config:
       - subnet: 172.2.0.0/24
-        gateway: 172.2.0.
+        gateway: 172.2.0.1

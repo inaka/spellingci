@@ -7,7 +7,11 @@
     kernel,
     stdlib,
     mnesia,
-    sumo_rest
+    sumo_rest,
+    hackney,
+    ssl,
+    jiffy,
+    lager
   ]},
   {modules, []},
   {mod, {spellingci, []}},

@@ -66,10 +66,20 @@ start_phase(start_cowboy_listeners, _StartType, []) ->
   {ok, Port} = application:get_env(spellingci, http_port),
   {ok, ListenerCount} = application:get_env(spellingci, http_listener_count),
 
+  Handlers = [ spellingci_login_handler
+             , spellingci_callback_handler
+             ],
+
   % Get the trails for each handler
-  Trails = [ {"/", cowboy_static, {file, "priv/index.html"}}
-           , {"/assets/[...]", cowboy_static, {dir, "priv/assets"}}
+  Trails = [ { "/"
+             , cowboy_static
+             , {file, filename:join([code:priv_dir(spellingci), "index.html"])}}
+           , { "/assets/[...]"
+             , cowboy_static
+             , {dir, filename:join([code:priv_dir(spellingci), "assets"])}}
+           | trails:trails(Handlers)
            ],
+
   % Store them so Cowboy is able to get them
   trails:store(Trails),
   % Set server routes
