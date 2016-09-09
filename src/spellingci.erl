@@ -62,6 +62,15 @@ stop(_State) -> ok.
 %% @private
 -spec start_phase(atom(), StartType::application:start_type(), []) ->
   ok | {error, _}.
+start_phase(create_schema, _StartType, []) ->
+  Node = node(),
+  _ = application:stop(mnesia),
+  case mnesia:create_schema([Node]) of
+    ok -> ok;
+    {error, {Node, {already_exists, Node}}} -> ok
+  end,
+  ok = application:start(mnesia),
+  sumo:create_schema();
 start_phase(start_cowboy_listeners, _StartType, []) ->
   {ok, Port} = application:get_env(spellingci, http_port),
   {ok, ListenerCount} = application:get_env(spellingci, http_listener_count),
