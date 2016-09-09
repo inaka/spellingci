@@ -63,9 +63,12 @@ stop(_State) -> ok.
 -spec start_phase(atom(), StartType::application:start_type(), []) ->
   ok | {error, _}.
 start_phase(create_schema, _StartType, []) ->
-  Nodes = [node()],
+  Node = node(),
   _ = application:stop(mnesia),
-  ok = mnesia:create_schema(Nodes),
+  case mnesia:create_schema([Node]) of
+    ok -> ok;
+    {error, {Node, {already_exists, Node}}} -> ok
+  end,
   ok = application:start(mnesia),
   sumo:create_schema();
 start_phase(start_cowboy_listeners, _StartType, []) ->

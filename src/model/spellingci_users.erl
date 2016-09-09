@@ -1,4 +1,4 @@
--module(spellingci_user).
+-module(spellingci_users).
 -author("Felipe Ripoll <ferigis@gmail.com>").
 
 -behavior(sumo_doc).
@@ -29,23 +29,24 @@
         ]).
 
 %%% Types
--type id() :: integer().
+-type id()       :: integer().
 -type username() :: binary().
--type name() :: binary().
--type token() :: binary().
--type email() :: binary().
+-type name()     :: binary().
+-type token()    :: binary().
+-type email()    :: binary().
+-type datetime() :: calendar:datetime() | undefined.
 
--type user() ::
-  #{ id => id() | undefined
-   , name => name()
-   , username => username()
-   , github_token => token()
-   , email => email()
-   , auth_token => token() | undefined
-   , auth_expires => spellingci_utils:datetime() | undefined
-   , synced_at => spellingci_utils:datetime() | undefined
-   , created_at => spellingci_utils:datetime()
-   , updated_at => spellingci_utils:datetime()
+-type user()     ::
+  #{ id           := id() | undefined
+   , name         := name()
+   , username     := username()
+   , github_token := token()
+   , email        := email()
+   , auth_token   := token() | undefined
+   , auth_expires := datetime()
+   , synced_at    := datetime()
+   , created_at   := calendar:datetime()
+   , updated_at   := calendar:datetime()
    }.
 
 -export_type([ user/0
@@ -62,17 +63,17 @@
 
 -spec new(username(), name(), token(), email()) -> user().
 new(Username, Name, GitHubToken, Email) ->
-  Now = spellingci_utils:now_datetime(),
-  #{ id => undefined
-   , name => Name
-   , username => Username
+  Now = calendar:universal_time(),
+  #{ id           => undefined
+   , name         => Name
+   , username     => Username
    , github_token => GitHubToken
-   , email => Email
-   , auth_token => undefined
+   , email        => Email
+   , auth_token   => undefined
    , auth_expires => undefined
-   , synced_at => undefined
-   , created_at => Now
-   , updated_at => Now
+   , synced_at    => undefined
+   , created_at   => Now
+   , updated_at   => Now
    }.
 
 %% Getters/Setters
@@ -116,27 +117,27 @@ auth_token(User) ->
 auth_token(User, Value) ->
   User#{auth_token => Value}.
 
--spec auth_expires(user()) -> spellingci_utils:datetime() | undefined.
+-spec auth_expires(user()) -> datetime().
 auth_expires(User) ->
   maps:get(auth_expires, User).
 
--spec auth_expires(user(), spellingci_utils:datetime()) -> user().
+-spec auth_expires(user(), calendar:datetime()) -> user().
 auth_expires(User, Value) ->
   User#{auth_expires => Value}.
 
--spec synced_at(user()) -> spellingci_utils:datetime() | undefined.
+-spec synced_at(user()) -> datetime().
 synced_at(User) ->
   maps:get(synced_at, User).
 
--spec synced_at(user(), spellingci_utils:datetime()) -> user().
+-spec synced_at(user(), calendar:datetime()) -> user().
 synced_at(User, Value) ->
   User#{synced_at => Value}.
 
--spec updated_at(user()) -> spellingci_utils:datetime().
+-spec updated_at(user()) -> calendar:datetime().
 updated_at(User) ->
   maps:get(updated_at, User).
 
--spec updated_at(user(), spellingci_utils:datetime()) -> user().
+-spec updated_at(user(), calendar:datetime()) -> user().
 updated_at(User, Value) ->
   User#{updated_at => Value}.
 
@@ -158,7 +159,7 @@ sumo_schema() ->
      sumo:new_field(created_at,    datetime, [not_null]),
      sumo:new_field(updated_at,    datetime, [not_null])
     ],
-  sumo:new_schema(user, Fields).
+  sumo:new_schema(github_users, Fields).
 
 -spec sumo_sleep(user()) -> sumo:model().
 sumo_sleep(User) ->

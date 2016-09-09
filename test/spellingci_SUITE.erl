@@ -57,41 +57,41 @@ github_login(_Config) ->
 
 -spec user_model(config()) -> ok.
 user_model(_Config) ->
-  User = spellingci_user:new( <<"felipe">>
+  User = spellingci_users:new( <<"felipe">>
                             , <<"Felipe Ripoll">>
                             , <<"token1234">>
                             , <<"felipe@inakanetworks.com">>
                             ),
-  PersistedUser = sumo:persist(user, User),
-  Id = spellingci_user:id(PersistedUser),
+  PersistedUser = sumo:persist(github_users, User),
+  Id = spellingci_users:id(PersistedUser),
   true = (Id /= undefined),
-  <<"Felipe Ripoll">> = spellingci_user:name(PersistedUser),
-  <<"felipe">> = spellingci_user:username(PersistedUser),
-  <<"token1234">> = spellingci_user:github_token(PersistedUser),
-  <<"felipe@inakanetworks.com">> = spellingci_user:email(PersistedUser),
-  undefined = spellingci_user:auth_token(PersistedUser),
-  undefined = spellingci_user:auth_expires(PersistedUser),
-  undefined = spellingci_user:auth_token(PersistedUser),
-  undefined = spellingci_user:synced_at(PersistedUser),
-  true = (spellingci_user:updated_at(PersistedUser) /= undefined),
+  <<"Felipe Ripoll">> = spellingci_users:name(PersistedUser),
+  <<"felipe">> = spellingci_users:username(PersistedUser),
+  <<"token1234">> = spellingci_users:github_token(PersistedUser),
+  <<"felipe@inakanetworks.com">> = spellingci_users:email(PersistedUser),
+  undefined = spellingci_users:auth_token(PersistedUser),
+  undefined = spellingci_users:auth_expires(PersistedUser),
+  undefined = spellingci_users:auth_token(PersistedUser),
+  undefined = spellingci_users:synced_at(PersistedUser),
+  true = (spellingci_users:updated_at(PersistedUser) /= undefined),
 
   % updating the user
-  Now = spellingci_utils:now_datetime(),
-  User2 = spellingci_user:name(PersistedUser, <<"Felipe Ripoll Gisbert">>),
-  User3 = spellingci_user:github_token(User2, <<"1234token">>),
-  User4 = spellingci_user:email(User3, <<"ferigis@gmail.com">>),
-  User5 = spellingci_user:auth_token(User4, <<"auth_token123">>),
-  User6 = spellingci_user:auth_expires(User5, Now),
-  User7 = spellingci_user:synced_at(User6, Now),
-  User8 = spellingci_user:updated_at(User7, Now),
-  UserPersisted2 = sumo:persist(user, User8),
-  UserPersisted2 = sumo:find(user, Id),
-  <<"Felipe Ripoll Gisbert">> = spellingci_user:name(UserPersisted2),
-  <<"1234token">> = spellingci_user:github_token(UserPersisted2),
-  <<"ferigis@gmail.com">> = spellingci_user:email(UserPersisted2),
-  <<"auth_token123">> = spellingci_user:auth_token(UserPersisted2),
-  Now = spellingci_user:auth_expires(UserPersisted2),
-  Now = spellingci_user:synced_at(UserPersisted2),
+  Now = calendar:universal_time(),
+  User2 = spellingci_users:name(PersistedUser, <<"Felipe Ripoll Gisbert">>),
+  User3 = spellingci_users:github_token(User2, <<"1234token">>),
+  User4 = spellingci_users:email(User3, <<"ferigis@gmail.com">>),
+  User5 = spellingci_users:auth_token(User4, <<"auth_token123">>),
+  User6 = spellingci_users:auth_expires(User5, Now),
+  User7 = spellingci_users:synced_at(User6, Now),
+  User8 = spellingci_users:updated_at(User7, Now),
+  UserPersisted2 = sumo:persist(github_users, User8),
+  UserPersisted2 = sumo:find(github_users, Id),
+  <<"Felipe Ripoll Gisbert">> = spellingci_users:name(UserPersisted2),
+  <<"1234token">> = spellingci_users:github_token(UserPersisted2),
+  <<"ferigis@gmail.com">> = spellingci_users:email(UserPersisted2),
+  <<"auth_token123">> = spellingci_users:auth_token(UserPersisted2),
+  Now = spellingci_users:auth_expires(UserPersisted2),
+  Now = spellingci_users:synced_at(UserPersisted2),
   ok.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
