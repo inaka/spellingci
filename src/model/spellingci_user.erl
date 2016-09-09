@@ -146,7 +146,6 @@ updated_at(User, Value) ->
 
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
-  
   Fields =
     [sumo:new_field(id,            integer,  [id, not_null, auto_increment]),
      sumo:new_field(username,      string,   [{length, 255}, not_null]),
