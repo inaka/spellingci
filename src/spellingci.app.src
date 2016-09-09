@@ -6,16 +6,17 @@
   {applications, [
     kernel,
     stdlib,
-    mnesia,
     sumo_rest,
     hackney,
     ssl,
     jiffy,
-    lager
+    lager,
+    sumo_db
   ]},
   {modules, []},
   {mod, {spellingci, []}},
   {start_phases , [
+    {create_schema, []},
     {start_cowboy_listeners, []}
   ]}
 ]}.
