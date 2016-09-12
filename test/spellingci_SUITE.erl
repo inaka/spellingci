@@ -151,7 +151,4 @@ call(Url) ->
 
 -spec has_cookie(list()) -> boolean().
 has_cookie(Headers) ->
-  case lists:keyfind(<<"set-cookie">>, 1, Headers) of
-    false                 -> false;
-    {<<"set-cookie">>, _} -> true
-  end.
+  lists:keyfind(<<"set-cookie">>, 1, Headers) =/= false.
