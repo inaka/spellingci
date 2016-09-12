@@ -11,7 +11,8 @@
     ssl,
     jiffy,
     lager,
-    sumo_db
+    sumo_db,
+    egithub
   ]},
   {modules, []},
   {mod, {spellingci, []}},
