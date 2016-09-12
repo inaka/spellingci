@@ -3,8 +3,8 @@
 
 -export([ create/4
         , find/1
-        , update_auth_token/1
         , update/1
+        , save_token/1
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -27,14 +27,21 @@ find(Id) ->
     User     -> User
   end.
 
--spec update_auth_token(spellingci_users:user()) -> spellingci_users:user().
-update_auth_token(User) ->
-  Now = calendar:universal_time(),
-  Expires = add_days(Now, 1),
-  UUID = uuid(),
-  User1 = spellingci_users:auth_token(User, UUID),
-  User2 = spellingci_users:auth_expires(User1, Expires),
-  sumo:persist(github_users, User2).
+-spec save_token(binary()) -> spellingci_users:token() | undefined.
+save_token(Token) ->
+  Cred = egithub:oauth(Token),
+  {ok, GitHubUser} = egithub:user(Cred),
+  Id = maps:get(<<"id">>, GitHubUser, null),
+  UserName = maps:get(<<"login">>, GitHubUser, null),
+  Name = maps:get(<<"name">>, GitHubUser, null),
+  User = case find(Id) of
+    not_found -> create(Id, UserName, Name, Token);
+    FoundUser -> FoundUser
+  end,
+  User2 = spellingci_users:github_token(User, Token),
+  User3 = update_auth_token(User2),
+  AuthUser = update(User3),
+  spellingci_users:auth_token(AuthUser).
 
 -spec update(spellingci_users:user()) -> spellingci_users:user().
 update(User) ->
@@ -50,32 +57,17 @@ add_days({Date, Time}, Days) ->
   NewDate = calendar:gregorian_days_to_date(DaysToDate),
   {NewDate, Time}.
 
+-spec update_auth_token(spellingci_users:user()) -> spellingci_users:user().
+update_auth_token(User) ->
+  Now = calendar:universal_time(),
+  Expires = add_days(Now, 1),
+  UUID = uuid(),
+  User1 = spellingci_users:auth_token(User, UUID),
+  spellingci_users:auth_expires(User1, Expires).
+
 -spec uuid() -> binary().
 uuid() ->
-  R1 = rand:uniform(round(math:pow(2, 48))) - 1,
-  R2 = rand:uniform(round(math:pow(2, 12))) - 1,
-  R3 = rand:uniform(round(math:pow(2, 32))) - 1,
-  R4 = rand:uniform(round(math:pow(2, 30))) - 1,
-  Uuid = uuid(R1, R2, R3, R4),
-  to_binary(Uuid).
-
--spec uuid( pos_integer()
-          , pos_integer()
-          , pos_integer()
-          , pos_integer()
-          ) -> binary().
-uuid(R1, R2, R3, R4) ->
-  <<R1:48, 4:4, R2:12, 2:2, R3:32, R4: 30>>.
-
--spec to_binary(binary()) -> binary().
-to_binary(U) ->
-  iolist_to_binary(
-    io_lib:format(
-      "~8.16.0b-~4.16.0b-~4.16.0b-~2.16.0b~2.16.0b-~12.16.0b",
-      get_parts(U)
-     )
-   ).
-
--spec get_parts(binary()) -> list().
-get_parts(<<TL:32, TM:16, THV:16, CSR:8, CSL:8, N:48>>) ->
-  [TL, TM, THV, CSR, CSL, N].
+  State = uuid:new(self()),
+  {Uuid, _} = uuid:get_v1(State),
+  UuidString = uuid:uuid_to_string(Uuid),
+  list_to_binary(UuidString).

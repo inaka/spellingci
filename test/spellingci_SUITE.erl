@@ -47,12 +47,12 @@ connect(_Config) ->
 -spec github_login(config()) -> ok.
 github_login(_Config) ->
   % check the login
-  {ok, 302, Result, _} = call("/oauth/login"),
+  {ok, 302, Result, _} = api_call("/oauth/login"),
   Location = proplists:get_value(<<"Location">>, Result),
   <<"https://github.com/login/oauth/authorize?", _/binary>> = Location,
 
   % check the callback
-  {ok, 400, _, Client} = call("/oauth/callback?code=1234567890"),
+  {ok, 400, _, Client} = api_call("/oauth/callback?code=1234567890"),
   {ok, <<"Error: ", Body/binary >>} = hackney:body(Client),
   404 =  jiffy:decode(Body, [return_maps]),
   ok.
@@ -112,21 +112,21 @@ auth_cookie(_Config) ->
             , <<"name">>  => <<"Felipe">>
             }}
     end),
-  {ok, 302, RespHeaders, _} = call("/oauth/callback?code=12345"),
+  {ok, 302, RespHeaders, _} = api_call("/oauth/callback?code=12345"),
   true = has_cookie(RespHeaders),
 
   % test coverage
-  {ok, 302, RespHeaders2, _} = call("/oauth/callback?code=4321"),
+  {ok, 302, RespHeaders2, _} = api_call("/oauth/callback?code=4321"),
   true = has_cookie(RespHeaders2),
-  {ok, 400, _, _} = call(<<"/oauth/callback">>),
+  {ok, 400, _, _} = api_call(<<"/oauth/callback">>),
   ok = meck:expect(hackney, request, fun(post, _Url, _Headers, _Body, _Opts) ->
       {ok, 400, [], client}
     end),
-  {ok, 400, _, _} = call("/oauth/callback?code=1234"),
+  {ok, 400, _, _} = api_call("/oauth/callback?code=1234"),
   ok = meck:expect(hackney, request, fun(post, _Url, _Headers, _Body, _Opts) ->
       {error, <<"this_is_a_reason">>}
     end),
-  {ok, 400, _, _} = call("/oauth/callback?code=1234"),
+  {ok, 400, _, _} = api_call("/oauth/callback?code=1234"),
   [_, _] = meck:unload(),
   ok.
 
@@ -136,15 +136,15 @@ auth_cookie(_Config) ->
 
 -spec test_connection() -> ok.
 test_connection() ->
-  {ok, 200, Result, _} = call("/"),
+  {ok, 200, Result, _} = api_call("/"),
   ContentLength = proplists:get_value(<<"content-length">>, Result),
   true = (binary_to_integer(ContentLength) > 0),
   ok.
 
--spec call(iodata()) -> {ok, integer(), list(), term()}
-                      | {ok, integer(), list()}
-                      | {error, term()}.
-call(Url) ->
+-spec api_call(iodata()) -> {ok, integer(), list(), term()}
+                          | {ok, integer(), list()}
+                          | {error, term()}.
+api_call(Url) ->
   {ok, Port} = application:get_env(spellingci, http_port),
   Url2 = [<<"http://localhost:">>, integer_to_list(Port), Url],
   hackney:request(Url2).

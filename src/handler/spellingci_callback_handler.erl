@@ -46,7 +46,7 @@ handle(Req, State) ->
     {Code, Req2} ->
       case access_token(Code) of
         {ok, Token} ->
-          AuthToken = save_user(Token),
+          AuthToken = spellingci_users_repo:save_token(Token),
           Url = "/",
           RedirHeaders = [{<<"Location">>, Url}],
           Req3 = cowboy_req:set_resp_cookie( <<"token">>
@@ -98,19 +98,3 @@ access_token(Code) ->
     {error, Reason} ->
       {error, Reason}
   end.
-
--spec save_user(binary()) -> spellingci_users:token() | undefined.
-save_user(Token) ->
-  Cred = egithub:oauth(Token),
-  {ok, GitHubUser} = egithub:user(Cred),
-  Id = maps:get(<<"id">>, GitHubUser, null),
-  UserName = maps:get(<<"login">>, GitHubUser, null),
-  Name = maps:get(<<"name">>, GitHubUser, null),
-  User = case spellingci_users_repo:find(Id) of
-    not_found -> spellingci_users_repo:create(Id, UserName, Name, Token);
-    FoundUser -> FoundUser
-  end,
-  User2 = spellingci_users:github_token(User, Token),
-  User3 = spellingci_users_repo:update(User2),
-  AuthUser = spellingci_users_repo:update_auth_token(User3),
-  spellingci_users:auth_token(AuthUser).
