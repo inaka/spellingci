@@ -33,7 +33,7 @@
 -type token()    :: binary().
 -type datetime() :: calendar:datetime() | undefined.
 
--type user()     ::
+-opaque user()     ::
   #{ id           := id()
    , name         := name()
    , username     := username()

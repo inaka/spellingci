@@ -9,6 +9,7 @@
 -export([ connect/1
         , github_login/1
         , user_model/1
+        , repo_model/1
         , auth_cookie/1
         ]).
 
@@ -22,6 +23,7 @@
 all() ->  [ connect
           , github_login
           , user_model
+          , repo_model
           , auth_cookie
           ].
 
@@ -91,6 +93,32 @@ user_model(_Config) ->
   Now = spellingci_users:auth_expires(UserPersisted2),
   Now = spellingci_users:synced_at(UserPersisted2),
   not_found = spellingci_users_repo:find(2),
+  ok.
+
+-spec repo_model(config()) -> ok.
+repo_model(_Config) ->
+  Id = 1,
+  UserId = 2,
+  Name = <<"RepoName">>,
+  FullName = <<"Full/RepoName">>,
+  Url = <<"https://github.com/Full/RepoName">>,
+  Private = false,
+  Repo = spellingci_repos_repo:create(Id, UserId, Name, FullName, Url, Private),
+  Repo = spellingci_repos_repo:find(Id),
+  Id = spellingci_repos:id(Repo),
+  UserId = spellingci_repos:user_id(Repo),
+  Name = spellingci_repos:name(Repo),
+  FullName = spellingci_repos:full_name(Repo),
+  Url = spellingci_repos:url(Repo),
+  Private = spellingci_repos:private(Repo),
+  off = spellingci_repos:status(Repo),
+  Created = spellingci_repos:created_at(Repo),
+  Created = spellingci_repos:updated_at(Repo),
+  Repo2 = spellingci_repos:status(Repo, on),
+  Repo3 = spellingci_repos_repo:update(Repo2),
+  Repo4 = spellingci_repos_repo:find(Id),
+  on = spellingci_repos:status(Repo4),
+  not_found = spellingci_repos_repo:find(2),
   ok.
 
 -spec auth_cookie(config()) -> ok.
