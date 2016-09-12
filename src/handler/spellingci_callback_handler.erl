@@ -45,13 +45,19 @@ handle(Req, State) ->
       {ok, Req3, State};
     {Code, Req2} ->
       case access_token(Code) of
-        {ok, _Token} ->
+        {ok, Token} ->
+          AuthToken = save_user(Token),
           Url = "/",
           RedirHeaders = [{<<"Location">>, Url}],
-          {ok, Req3} = cowboy_req:reply(302, RedirHeaders, Req2),
-          {ok, Req3, State};
+          Req3 = cowboy_req:set_resp_cookie( <<"token">>
+                                           , AuthToken
+                                           , [{path, <<"/">>}]
+                                           , Req2
+                                           ),
+          {ok, Req4} = cowboy_req:reply(302, RedirHeaders, Req3),
+          {ok, Req4, State};
         {error, Reason} ->
-          _ = lager:log(error, self, "~p", [Reason]),
+          _ = lager:error("~p", [Reason]),
           Body = [<<"Error: ">>, Reason],
           {ok, Req3} = cowboy_req:reply(400, Headers, Body, Req2),
           {ok, Req3, State}
@@ -66,10 +72,12 @@ terminate(_Reason, _Req, _State) ->
 %%% Private
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+-spec access_token(binary()) -> {ok, spellingci_users:token()}
+                              | {error, term()}.
 access_token(Code) ->
   {ok, ClientId} = application:get_env(spellingci, github_client_id),
   {ok, ClientSecret} = application:get_env(spellingci, github_client_secret),
-  _ = lager:log(info, self, "~p - ~p", [ClientId, ClientSecret]),
+  _ = lager:info("~p - ~p", [ClientId, ClientSecret]),
   Url = "https://github.com/login/oauth/access_token",
   Headers = [{<<"Content-Type">>, <<"application/x-www-form-urlencoded">>},
              {<<"Accept">>, <<"application/json">>}],
@@ -90,3 +98,19 @@ access_token(Code) ->
     {error, Reason} ->
       {error, Reason}
   end.
+
+-spec save_user(binary()) -> spellingci_users:token() | undefined.
+save_user(Token) ->
+  Cred = egithub:oauth(Token),
+  {ok, GitHubUser} = egithub:user(Cred),
+  Id = maps:get(<<"id">>, GitHubUser, null),
+  UserName = maps:get(<<"login">>, GitHubUser, null),
+  Name = maps:get(<<"name">>, GitHubUser, null),
+  User = case spellingci_users_repo:find(Id) of
+    not_found -> spellingci_users_repo:create(Id, UserName, Name, Token);
+    FoundUser -> FoundUser
+  end,
+  User2 = spellingci_users:github_token(User, Token),
+  User3 = spellingci_users_repo:update(User2),
+  AuthUser = spellingci_users_repo:update_auth_token(User3),
+  spellingci_users:auth_token(AuthUser).

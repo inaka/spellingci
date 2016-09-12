@@ -5,6 +5,7 @@
        {ref,"3abd60ce4337bf894a60065207d93845c8ce23c7"}},
   1},
  {<<"cowlib">>,{pkg,<<"cowlib">>,<<"1.0.2">>},2},
+ {<<"egithub">>,{pkg,<<"egithub">>,<<"0.2.8">>},0},
  {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.8">>},1},
  {<<"hackney">>,{pkg,<<"hackney">>,<<"1.6.1">>},0},
  {<<"idna">>,{pkg,<<"idna">>,<<"1.2.0">>},1},

@@ -9,6 +9,7 @@
 -export([ connect/1
         , github_login/1
         , user_model/1
+        , auth_cookie/1
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -21,6 +22,7 @@
 all() ->  [ connect
           , github_login
           , user_model
+          , auth_cookie
           ].
 
 -spec init_per_suite(config()) -> config().
@@ -57,41 +59,75 @@ github_login(_Config) ->
 
 -spec user_model(config()) -> ok.
 user_model(_Config) ->
-  User = spellingci_users:new( <<"felipe">>
-                            , <<"Felipe Ripoll">>
-                            , <<"token1234">>
-                            , <<"felipe@inakanetworks.com">>
-                            ),
-  PersistedUser = sumo:persist(github_users, User),
-  Id = spellingci_users:id(PersistedUser),
-  true = (Id /= undefined),
-  <<"Felipe Ripoll">> = spellingci_users:name(PersistedUser),
-  <<"felipe">> = spellingci_users:username(PersistedUser),
-  <<"token1234">> = spellingci_users:github_token(PersistedUser),
-  <<"felipe@inakanetworks.com">> = spellingci_users:email(PersistedUser),
-  undefined = spellingci_users:auth_token(PersistedUser),
-  undefined = spellingci_users:auth_expires(PersistedUser),
-  undefined = spellingci_users:auth_token(PersistedUser),
-  undefined = spellingci_users:synced_at(PersistedUser),
-  true = (spellingci_users:updated_at(PersistedUser) /= undefined),
+  Id = 1,
+  User = spellingci_users_repo:create( Id
+                                     , <<"felipe">>
+                                     , <<"Felipe Ripoll">>
+                                     , <<"token1234">>
+                                     ),
+  Id = spellingci_users:id(User),
+  <<"Felipe Ripoll">> = spellingci_users:name(User),
+  <<"felipe">> = spellingci_users:username(User),
+  <<"token1234">> = spellingci_users:github_token(User),
+  undefined = spellingci_users:auth_token(User),
+  undefined = spellingci_users:auth_expires(User),
+  undefined = spellingci_users:auth_token(User),
+  undefined = spellingci_users:synced_at(User),
+  true = (spellingci_users:updated_at(User) /= undefined),
 
   % updating the user
   Now = calendar:universal_time(),
-  User2 = spellingci_users:name(PersistedUser, <<"Felipe Ripoll Gisbert">>),
+  User2 = spellingci_users:name(User, <<"Felipe Ripoll Gisbert">>),
   User3 = spellingci_users:github_token(User2, <<"1234token">>),
-  User4 = spellingci_users:email(User3, <<"ferigis@gmail.com">>),
-  User5 = spellingci_users:auth_token(User4, <<"auth_token123">>),
-  User6 = spellingci_users:auth_expires(User5, Now),
-  User7 = spellingci_users:synced_at(User6, Now),
-  User8 = spellingci_users:updated_at(User7, Now),
-  UserPersisted2 = sumo:persist(github_users, User8),
-  UserPersisted2 = sumo:find(github_users, Id),
+  User4 = spellingci_users:auth_token(User3, <<"auth_token123">>),
+  User5 = spellingci_users:auth_expires(User4, Now),
+  User6 = spellingci_users:synced_at(User5, Now),
+  User7 = spellingci_users:updated_at(User6, Now),
+  UserPersisted2 = sumo:persist(github_users, User7),
+  UserPersisted2 = spellingci_users_repo:find(Id),
   <<"Felipe Ripoll Gisbert">> = spellingci_users:name(UserPersisted2),
   <<"1234token">> = spellingci_users:github_token(UserPersisted2),
-  <<"ferigis@gmail.com">> = spellingci_users:email(UserPersisted2),
   <<"auth_token123">> = spellingci_users:auth_token(UserPersisted2),
   Now = spellingci_users:auth_expires(UserPersisted2),
   Now = spellingci_users:synced_at(UserPersisted2),
+  not_found = spellingci_users_repo:find(2),
+  ok.
+
+-spec auth_cookie(config()) -> ok.
+auth_cookie(_Config) ->
+  ok = meck:expect(hackney, request, fun(post, _Url, _Headers, _Body, _Opts) ->
+      {ok, 200, [], client}
+    end),
+  ok = meck:expect(hackney, body, fun(client) ->
+      {ok, <<"{ \"access_token\":\"acces_token1234\"
+              , \"token_type\":\"bearer\"
+              ,\"scope\":\"repo,user:email\"}">>}
+  end),
+  ok = meck:expect(egithub, oauth, fun(<<"acces_token1234">>) ->
+      {oauth, <<"987654321">>}
+    end),
+  ok = meck:expect(egithub, user, fun({oauth, <<"987654321">>}) ->
+      {ok, #{ <<"id">>    => 1234
+            , <<"login">> => <<"username">>
+            , <<"name">>  => <<"Felipe">>
+            }}
+    end),
+  {ok, 302, RespHeaders, _} = call("/oauth/callback?code=12345"),
+  true = has_cookie(RespHeaders),
+
+  % test coverage
+  {ok, 302, RespHeaders2, _} = call("/oauth/callback?code=4321"),
+  true = has_cookie(RespHeaders2),
+  {ok, 400, _, _} = call(<<"/oauth/callback">>),
+  ok = meck:expect(hackney, request, fun(post, _Url, _Headers, _Body, _Opts) ->
+      {ok, 400, [], client}
+    end),
+  {ok, 400, _, _} = call("/oauth/callback?code=1234"),
+  ok = meck:expect(hackney, request, fun(post, _Url, _Headers, _Body, _Opts) ->
+      {error, <<"this_is_a_reason">>}
+    end),
+  {ok, 400, _, _} = call("/oauth/callback?code=1234"),
+  [_, _] = meck:unload(),
   ok.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -105,7 +141,17 @@ test_connection() ->
   true = (binary_to_integer(ContentLength) > 0),
   ok.
 
+-spec call(iodata()) -> {ok, integer(), list(), term()}
+                      | {ok, integer(), list()}
+                      | {error, term()}.
 call(Url) ->
   {ok, Port} = application:get_env(spellingci, http_port),
   Url2 = [<<"http://localhost:">>, integer_to_list(Port), Url],
   hackney:request(Url2).
+
+-spec has_cookie(list()) -> boolean().
+has_cookie(Headers) ->
+  case lists:keyfind(<<"set-cookie">>, 1, Headers) of
+    false                 -> false;
+    {<<"set-cookie">>, _} -> true
+  end.

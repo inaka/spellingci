@@ -10,8 +10,6 @@
         , name/2
         , github_token/1
         , github_token/2
-        , email/1
-        , email/2
         , auth_token/1
         , auth_token/2
         , auth_expires/1
@@ -33,15 +31,13 @@
 -type username() :: binary().
 -type name()     :: binary().
 -type token()    :: binary().
--type email()    :: binary().
 -type datetime() :: calendar:datetime() | undefined.
 
 -type user()     ::
-  #{ id           := id() | undefined
+  #{ id           := id()
    , name         := name()
    , username     := username()
    , github_token := token()
-   , email        := email()
    , auth_token   := token() | undefined
    , auth_expires := datetime()
    , synced_at    := datetime()
@@ -50,7 +46,6 @@
    }.
 
 -export_type([ user/0
-             , email/0
              , name/0
              , token/0
              , username/0
@@ -61,14 +56,13 @@
 %% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec new(username(), name(), token(), email()) -> user().
-new(Username, Name, GitHubToken, Email) ->
+-spec new(id(), username(), name(), token()) -> user().
+new(Id, Username, Name, GitHubToken) ->
   Now = calendar:universal_time(),
-  #{ id           => undefined
+  #{ id           => Id
    , name         => Name
    , username     => Username
    , github_token => GitHubToken
-   , email        => Email
    , auth_token   => undefined
    , auth_expires => undefined
    , synced_at    => undefined
@@ -100,14 +94,6 @@ github_token(User) ->
 -spec github_token(user(), token()) -> user().
 github_token(User, Value) ->
   User#{github_token => Value}.
-
--spec email(user()) -> email().
-email(User) ->
-  maps:get(email, User).
-
--spec email(user(), email()) -> user().
-email(User, Value) ->
-  User#{email => Value}.
 
 -spec auth_token(user()) -> token() | undefined.
 auth_token(User) ->
@@ -148,16 +134,15 @@ updated_at(User, Value) ->
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
   Fields =
-    [sumo:new_field(id,            integer,  [id, not_null, auto_increment]),
-     sumo:new_field(username,      string,   [{length, 255}, not_null]),
-     sumo:new_field(name,          string,   [{length, 255}]),
-     sumo:new_field(github_token,  string,   [{length, 255}]),
-     sumo:new_field(email,         string,   [{length, 255}]),
-     sumo:new_field(auth_token,    string,   [{length, 255}]),
-     sumo:new_field(auth_expires,  datetime),
-     sumo:new_field(synced_at,     datetime),
-     sumo:new_field(created_at,    datetime, [not_null]),
-     sumo:new_field(updated_at,    datetime, [not_null])
+    [ sumo:new_field(id,            integer,  [id, not_null])
+    , sumo:new_field(username,      string,   [{length, 255}, not_null])
+    , sumo:new_field(name,          string,   [{length, 255}])
+    , sumo:new_field(github_token,  string,   [{length, 255}])
+    , sumo:new_field(auth_token,    string,   [{length, 255}])
+    , sumo:new_field(auth_expires,  datetime)
+    , sumo:new_field(synced_at,     datetime)
+    , sumo:new_field(created_at,    datetime, [not_null])
+    , sumo:new_field(updated_at,    datetime, [not_null])
     ],
   sumo:new_schema(github_users, Fields).
 
