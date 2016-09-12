@@ -28,14 +28,15 @@
 -type url()      :: binary().
 -type name()     :: binary().
 -type status()   :: on | off.
+-type private()  :: boolean().
 
--opaque repo() ::
+-opaque repo()   ::
   #{ id         := id()
    , user_id    := spellingci_users:id()
    , name       := name()
    , full_name  := name()
    , url        := url()
-   , private    := boolean()
+   , private    := private()
    , status     := status()
    , created_at := calendar:datetime()
    , updated_at := calendar:datetime()
@@ -43,13 +44,22 @@
 
  -export_type([ repo/0
               , id/0
+              , name/0
+              , url/0
+              , private/0
               ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec new(id(), id(), name(), name(), url(), boolean()) -> repo().
+-spec new( id()
+         , spellingci_repos:id()
+         , name()
+         , name()
+         , url()
+         , private()
+         ) -> repo().
 new(Id, UserId, Name, FullName, Url, Private) ->
   Now = calendar:universal_time(),
   #{ id         => Id
@@ -84,7 +94,7 @@ full_name(Repo) ->
 url(Repo) ->
   maps:get(url, Repo).
 
--spec private(repo()) -> boolean().
+-spec private(repo()) -> private().
 private(Repo) ->
   maps:get(private, Repo).
 

@@ -17,13 +17,12 @@ find(Id) ->
     User     -> User
   end.
 
-
 -spec create( spellingci_repos:id()
-            , spellingci_repos:id()
+            , spellingci_users:id()
             , spellingci_repos:name()
             , spellingci_repos:name()
             , spellingci_repos:url()
-            , boolean()
+            , spellingci_repos:private()
             ) -> spellingci_repos:repo().
 create(Id, UserId, Name, FullName, Url, Private) ->
   Repo = spellingci_repos:new(Id, UserId, Name, FullName, Url, Private),
