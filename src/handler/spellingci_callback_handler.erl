@@ -1,5 +1,5 @@
 -module(spellingci_callback_handler).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -export([ init/3
         , handle/2

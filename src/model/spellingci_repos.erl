@@ -1,7 +1,8 @@
 -module(spellingci_repos).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -behavior(sumo_doc).
+-behavior(sumo_rest_doc).
 
 -export([ new/6
         , id/1
@@ -23,12 +24,20 @@
         , sumo_sleep/1
         ]).
 
+%%% sumo_rest callbacks
+-export([ to_json/1
+        , from_json/1
+        , update/2
+        , location/2
+        ]).
+
 %%% Types
 -type id()       :: integer().
 -type url()      :: binary().
 -type name()     :: binary().
 -type status()   :: on | off.
 -type private()  :: boolean().
+-type json()     :: #{atom() | binary() => atom() | binary()}.
 
 -opaque repo()   ::
   #{ id         := id()
@@ -144,3 +153,59 @@ sumo_sleep(Repo) ->
 -spec sumo_wakeup(sumo:model()) -> repo().
 sumo_wakeup(Repo) ->
   Repo.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% sumo_rest callbacks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+-spec to_json(repo()) -> json().
+to_json(Repo) ->
+  #{ id         => maps:get(id, Repo)
+   , user_id    => maps:get(user_id, Repo)
+   , name       => maps:get(name, Repo)
+   , full_name  => maps:get(full_name, Repo)
+   , url        => maps:get(url, Repo)
+   , private    => maps:get(private, Repo)
+   , status     => maps:get(status, Repo)
+   , created_at => sr_json:encode_date(maps:get(created_at, Repo))
+   , updated_at => sr_json:encode_date(maps:get(updated_at, Repo))
+   }.
+
+-spec from_json(sumo_rest_doc:json()) -> {ok, repo()} | {error, iodata()}.
+from_json(Json) ->
+  Now = sr_json:encode_date(calendar:universal_time()),
+  try
+    { ok
+    , #{ id         => maps:get(<<"id">>, Json)
+       , user_id    => maps:get(<<"user_id">>, Json)
+       , name       => maps:get(<<"name">>, Json)
+       , full_name  => maps:get(<<"full_name">>, Json)
+       , url        => maps:get(<<"url">>, Json)
+       , private    => maps:get(<<"private">>, Json)
+       , status     => maps:get(<<"status">>, Json)
+       , created_at =>
+           sr_json:decode_date(maps:get(<<"created_at">>, Json, Now))
+       , updated_at =>
+           sr_json:decode_date(maps:get(<<"updated_at">>, Json, Now))
+       }
+    }
+  catch
+    _:{badkey, Key} ->
+      {error, <<"missing field: ", Key/binary>>}
+  end.
+
+-spec update(repo(), sumo_rest_doc:json()) ->
+  {ok, repo()} | {error, iodata()}.
+update(Repo, Json) ->
+  try
+    NewStatus = maps:get(<<"status">>, Json),
+    UpdatedRepo =
+      Repo#{status := NewStatus, updated_at := calendar:universal_time()},
+    {ok, UpdatedRepo}
+  catch
+    _:{badkey, Key} ->
+      {error, <<"missing field: ", Key/binary>>}
+  end.
+
+-spec location(repo(), sumo_rest_doc:path()) -> binary().
+location(Repo, Path) -> iolist_to_binary([Path, "/", spellingci_repos:id(Repo)]).

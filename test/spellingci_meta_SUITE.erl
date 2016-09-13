@@ -1,5 +1,5 @@
 -module(spellingci_meta_SUITE).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -include_lib("mixer/include/mixer.hrl").
 -mixin([{ktn_meta_SUITE

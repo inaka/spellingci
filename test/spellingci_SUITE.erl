@@ -1,5 +1,5 @@
 -module(spellingci_SUITE).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -export([ all/0
         , init_per_suite/1
@@ -115,7 +115,7 @@ repo_model(_Config) ->
   Created = spellingci_repos:created_at(Repo),
   Created = spellingci_repos:updated_at(Repo),
   Repo2 = spellingci_repos:status(Repo, on),
-  Repo3 = spellingci_repos_repo:update(Repo2),
+  _Repo3 = spellingci_repos_repo:update(Repo2),
   Repo4 = spellingci_repos_repo:find(Id),
   on = spellingci_repos:status(Repo4),
   not_found = spellingci_repos_repo:find(2),

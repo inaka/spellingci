@@ -18,7 +18,7 @@
 %%% @copyright Inaka <hello@inaka.net>
 %%%
 -module(spellingci).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -behaviour(application).
 
@@ -77,6 +77,7 @@ start_phase(start_cowboy_listeners, _StartType, []) ->
 
   Handlers = [ spellingci_login_handler
              , spellingci_callback_handler
+             , spellingci_repos_handler
              ],
 
   % Get the trails for each handler
