@@ -51,7 +51,7 @@ trails() ->
 is_authorized(Req, State) ->
   {AuthToken, _} = cowboy_req:cookie(<<"token">>, Req, undefined),
   case spellingci_users_repo:valid_auth_token(AuthToken) of
-    false        -> {{false, <<"">>}, Req, State};
+    false        -> {{false, <<"Realm=spellingci">>}, Req, State};
     {true, User} -> {true, Req, State#{user => User}}
   end.
 
@@ -63,6 +63,6 @@ is_authorized(Req, State) ->
   {iodata(), cowboy_req:req(), sr_entities_handler:state()}.
 handle_get(Req, #{user := User} = State) ->
   Repos = spellingci_repos_repo:repos(User),
-  Reply     = [spellingci_repos:to_json(Repo) || Repo <- Repos],
-  JSON      = sr_json:encode(Reply),
+  Reply = [spellingci_repos:to_json(Repo) || Repo <- Repos],
+  JSON  = sr_json:encode(Reply),
   {JSON, Req, State}.

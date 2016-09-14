@@ -71,7 +71,7 @@ create_from_github(User, GithubRepo) ->
   Id = maps:get(<<"id">>, GithubRepo),
   UserId = spellingci_users:id(User),
   Name = maps:get(<<"name">>, GithubRepo),
-  FullName = <<(spellingci_users:username(User))/binary, "/", Name/binary>>,
+  FullName = maps:get(<<"full_name">>, GithubRepo),
   Url = maps:get(<<"html_url">>, GithubRepo),
   Private = maps:get(<<"private">>, GithubRepo),
-  spellingci_repos_repo:create(Id, UserId, Name, FullName, Url, Private).
+  create(Id, UserId, Name, FullName, Url, Private).

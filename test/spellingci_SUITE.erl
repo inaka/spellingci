@@ -181,10 +181,11 @@ list_repos(_Config) ->
   [Repo1] = spellingci_repos_repo:repos(User1Persisted),
   [Repo2] = spellingci_repos_repo:repos(User2Persisted),
   ok = meck:expect(egithub, repos, fun(_Token, _Opts) ->
-      {ok, [#{ <<"id">> => 3
-             , <<"name">> => <<"repofromgithub">>
-             , <<"html_url">> => <<"http://url">>
-             , <<"private">> => false
+      {ok, [#{ <<"id">>        => 3
+             , <<"name">>      => <<"repofromgithub">>
+             , <<"html_url">>  => <<"http://url">>
+             , <<"private">>   => false
+             , <<"full_name">> => <<"full/Name">>
              }]}
     end),
   [Repo3] = spellingci_repos_repo:repos(User3),
