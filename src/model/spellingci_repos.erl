@@ -182,7 +182,8 @@ from_json(Json) ->
        , full_name  => maps:get(<<"full_name">>, Json)
        , url        => maps:get(<<"url">>, Json)
        , private    => maps:get(<<"private">>, Json)
-       , status     => maps:get(<<"status">>, Json)
+       , status     => list_to_atom(binary_to_list(maps:get( <<"status">>
+                                                           , Json)))
        , created_at =>
            sr_json:decode_date(maps:get(<<"created_at">>, Json, Now))
        , updated_at =>

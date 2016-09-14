@@ -59,14 +59,10 @@ is_authorized(Req, State) ->
 %% Sumo Rest
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec handle_get(cowboy_req:req(), map()) ->
-  {iodata(), cowboy_req:req(), map()}.
+-spec handle_get(cowboy_req:req(), sr_entities_handler:state()) ->
+  {iodata(), cowboy_req:req(), sr_entities_handler:state()}.
 handle_get(Req, #{user := User} = State) ->
   Repos = spellingci_repos_repo:repos(User),
   Reply     = [spellingci_repos:to_json(Repo) || Repo <- Repos],
   JSON      = sr_json:encode(Reply),
   {JSON, Req, State}.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Internal Functions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
