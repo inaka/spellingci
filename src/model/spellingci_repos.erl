@@ -209,4 +209,5 @@ update(Repo, Json) ->
   end.
 
 -spec location(repo(), sumo_rest_doc:path()) -> binary().
-location(Repo, Path) -> iolist_to_binary([Path, "/", spellingci_repos:id(Repo)]).
+location(Repo, Path) ->
+  iolist_to_binary([Path, "/", spellingci_repos:id(Repo)]).
