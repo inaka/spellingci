@@ -1,9 +1,10 @@
 -module(spellingci_repos_repo).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -export([ find/1
         , create/6
         , update/1
+        , repos/1
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,3 +34,44 @@ update(Repo) ->
   Now = calendar:universal_time(),
   Repo2 = spellingci_repos:updated_at(Repo, Now),
   sumo:persist(github_repos, Repo2).
+
+-spec repos(spellingci_users:user()) -> [spellingci_repos:repo()].
+repos(User) ->
+  case spellingci_users:synced_at(User) of
+    undefined -> from_github(User);
+    _         -> find_by_user(User)
+  end.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Internal Functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+-spec find_by_user(spellingci_users:user()) -> [spellingci_repos:repo()].
+find_by_user(User) ->
+  _ = lager:info("fetching from DB..."),
+  UserId = spellingci_users:id(User),
+  Conditions = [{user_id, UserId}],
+  sumo:find_by(github_repos, Conditions).
+
+-spec from_github(spellingci_users:user()) -> [spellingci_repos:repo()].
+from_github(User) ->
+  _ = lager:info("fetching from github..."),
+  Token = spellingci_users:github_token(User),
+  Cred = egithub:oauth(Token),
+  Opts = #{type => <<"owner">>},
+  {ok, GithubRepos} = egithub:repos(Cred, Opts),
+  Now = calendar:universal_time(),
+  User2 = spellingci_users:synced_at(User, Now),
+  User2 = spellingci_users_repo:update(User2),
+  [create_from_github(User, GR) || GR <- GithubRepos].
+
+-spec create_from_github(spellingci_users:user(), map()) ->
+  spellingci_repos:repo().
+create_from_github(User, GithubRepo) ->
+  Id = maps:get(<<"id">>, GithubRepo),
+  UserId = spellingci_users:id(User),
+  Name = maps:get(<<"name">>, GithubRepo),
+  FullName = maps:get(<<"full_name">>, GithubRepo),
+  Url = maps:get(<<"html_url">>, GithubRepo),
+  Private = maps:get(<<"private">>, GithubRepo),
+  create(Id, UserId, Name, FullName, Url, Private).

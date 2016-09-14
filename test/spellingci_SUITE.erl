@@ -1,5 +1,5 @@
 -module(spellingci_SUITE).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -export([ all/0
         , init_per_suite/1
@@ -11,6 +11,7 @@
         , user_model/1
         , repo_model/1
         , auth_cookie/1
+        , list_repos/1
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -25,6 +26,7 @@ all() ->  [ connect
           , user_model
           , repo_model
           , auth_cookie
+          , list_repos
           ].
 
 -spec init_per_suite(config()) -> config().
@@ -115,7 +117,7 @@ repo_model(_Config) ->
   Created = spellingci_repos:created_at(Repo),
   Created = spellingci_repos:updated_at(Repo),
   Repo2 = spellingci_repos:status(Repo, on),
-  Repo3 = spellingci_repos_repo:update(Repo2),
+  _Repo3 = spellingci_repos_repo:update(Repo2),
   Repo4 = spellingci_repos_repo:find(Id),
   on = spellingci_repos:status(Repo4),
   not_found = spellingci_repos_repo:find(2),
@@ -158,6 +160,55 @@ auth_cookie(_Config) ->
   [_, _] = meck:unload(),
   ok.
 
+-spec list_repos(config()) -> ok.
+list_repos(_Config) ->
+  User1 = create_user(1),
+  User2 = create_user(2),
+  User3 = create_user(3),
+
+  ok = meck:expect(egithub, oauth, fun(Token) ->
+      {oauth, Token}
+    end),
+  ok = meck:expect(egithub, repos, fun(_Token, _Opts) ->
+      {ok, []}
+    end),
+  [] = spellingci_repos_repo:repos(User1),
+  [] = spellingci_repos_repo:repos(User2),
+  Repo1 = create_repo(1, 1),
+  Repo2 = create_repo(2, 2),
+  User1Persisted = spellingci_users_repo:find(1),
+  User2Persisted = spellingci_users_repo:find(2),
+  [Repo1] = spellingci_repos_repo:repos(User1Persisted),
+  [Repo2] = spellingci_repos_repo:repos(User2Persisted),
+  ok = meck:expect(egithub, repos, fun(_Token, _Opts) ->
+      {ok, [#{ <<"id">>        => 3
+             , <<"name">>      => <<"repofromgithub">>
+             , <<"html_url">>  => <<"http://url">>
+             , <<"private">>   => false
+             , <<"full_name">> => <<"full/Name">>
+             }]}
+    end),
+  [Repo3] = spellingci_repos_repo:repos(User3),
+  Repo3 = spellingci_repos_repo:find(3),
+
+  % test thru cowboy
+  ok = meck:expect(spellingci_users_repo, valid_auth_token, fun(_) ->
+      {true, User3}
+    end),
+  Headers = [{<<"Cookie">>, <<"token=token3">>}],
+  {ok, 200, _, Client} = api_call(get, "/repos", Headers),
+  {ok, Json} = hackney:body(Client),
+  [RepoDecoded] = jiffy:decode(Json, [return_maps]),
+  % Repo3b instead of Repo3 because sometimes the dates vary one second
+  {ok, Repo3b} = spellingci_repos:from_json(RepoDecoded),
+  true = (spellingci_repos:id(Repo3) == spellingci_repos:id(Repo3b)),
+
+  _ = meck:unload(),
+
+  {ok, 401, _, _} = api_call(get, "/repos", Headers),
+
+  ok.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Internal Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,10 +224,41 @@ test_connection() ->
                           | {ok, integer(), list()}
                           | {error, term()}.
 api_call(Url) ->
+  api_call(get, Url).
+
+-spec api_call(atom(), iodata()) -> {ok, integer(), list(), term()}
+                                  | {ok, integer(), list()}
+                                  | {error, term()}.
+api_call(Method, Url) ->
+  api_call(Method, Url, []).
+
+-spec api_call(atom(), iodata(), list()) -> {ok, integer(), list(), term()}
+                                          | {ok, integer(), list()}
+                                          | {error, term()}.
+api_call(Method, Url, Headers) ->
   {ok, Port} = application:get_env(spellingci, http_port),
   Url2 = [<<"http://localhost:">>, integer_to_list(Port), Url],
-  hackney:request(Url2).
+  hackney:request(Method, Url2, Headers).
 
 -spec has_cookie(list()) -> boolean().
 has_cookie(Headers) ->
   lists:keyfind(<<"set-cookie">>, 1, Headers) =/= false.
+
+-spec create_repo(spellingci_repos:id(), spellingci_users:id()) ->
+  spellingci_repos:repo().
+create_repo(RepoId, UserId) ->
+  RepoIdBin = integer_to_binary(RepoId),
+  spellingci_repos_repo:create( RepoId
+                              , UserId
+                              , <<"name", RepoIdBin/binary>>
+                              , <<"fullname/", RepoIdBin/binary>>
+                              , <<"http://url", RepoIdBin/binary>>
+                              , false).
+
+-spec create_user(spellingci_users:id()) -> spellingci_users:user().
+create_user(UserId) ->
+  UserIdBin = integer_to_binary(UserId),
+  spellingci_users_repo:create( UserId
+                              , <<"UserName", UserIdBin/binary>>
+                              , <<"Name", UserIdBin/binary>>
+                              , <<"token", UserIdBin/binary>>).

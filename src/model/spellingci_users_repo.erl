@@ -1,10 +1,11 @@
 -module(spellingci_users_repo).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -export([ create/4
         , find/1
         , update/1
         , save_token/1
+        , valid_auth_token/1
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,6 +47,18 @@ save_token(Token) ->
 -spec update(spellingci_users:user()) -> spellingci_users:user().
 update(User) ->
   sumo:persist(github_users, User).
+
+-spec valid_auth_token(spellingci_users:token()) ->
+  {true, spellingci_users:user()} | false.
+valid_auth_token(AuthToken) ->
+  Now = calendar:universal_time(),
+  Conditions = [ {auth_token, AuthToken}
+               , {auth_expires, '>', Now}
+               ],
+  case sumo:find_by(github_users, Conditions) of
+    []     -> false;
+    [User] -> {true, User}
+  end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% internal functions

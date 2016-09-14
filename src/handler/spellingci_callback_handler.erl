@@ -1,5 +1,5 @@
 -module(spellingci_callback_handler).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -export([ init/3
         , handle/2
@@ -47,7 +47,7 @@ handle(Req, State) ->
       case access_token(Code) of
         {ok, Token} ->
           AuthToken = spellingci_users_repo:save_token(Token),
-          Url = "/",
+          Url = "/#/repos",
           RedirHeaders = [{<<"Location">>, Url}],
           Req3 = cowboy_req:set_resp_cookie( <<"token">>
                                            , AuthToken

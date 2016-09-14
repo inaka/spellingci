@@ -1,5 +1,5 @@
 -module(spellingci_users).
--author("Felipe Ripoll <ferigis@gmail.com>").
+-author("Felipe Ripoll <felipe@inakanetworks.com>").
 
 -behavior(sumo_doc).
 
