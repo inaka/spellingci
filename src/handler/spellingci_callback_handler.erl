@@ -47,7 +47,7 @@ handle(Req, State) ->
       case access_token(Code) of
         {ok, Token} ->
           AuthToken = spellingci_users_repo:save_token(Token),
-          Url = "/",
+          Url = "/#/repos",
           RedirHeaders = [{<<"Location">>, Url}],
           Req3 = cowboy_req:set_resp_cookie( <<"token">>
                                            , AuthToken

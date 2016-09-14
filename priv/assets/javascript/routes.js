@@ -6,6 +6,11 @@ angular.module('spellingCI').config(['$routeProvider',
         controller: 'LandingController',
         controllerAs: 'landingCtrl'
       }).
+      when('/repos', {
+        templateUrl: 'assets/templates/repos.html',
+        controller: 'ReposController',
+        controllerAs: 'repoCtrl'
+      }).
       otherwise({
         redirectTo: '/'
     });
