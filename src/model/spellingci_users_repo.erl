@@ -5,7 +5,6 @@
         , find/1
         , update/1
         , save_token/1
-        , valid_auth_token/1
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -28,59 +27,21 @@ find(Id) ->
     User     -> User
   end.
 
--spec save_token(binary()) -> spellingci_users:token() | undefined.
-save_token(Token) ->
-  Cred = egithub:oauth(Token),
+-spec save_token(spellingci_users:token()) -> spellingci_users:user().
+save_token(GithubToken) ->
+  Cred = egithub:oauth(GithubToken),
   {ok, GitHubUser} = egithub:user(Cred),
   Id = maps:get(<<"id">>, GitHubUser, null),
-  UserName = maps:get(<<"login">>, GitHubUser, null),
-  Name = maps:get(<<"name">>, GitHubUser, null),
   User = case find(Id) of
-    not_found -> create(Id, UserName, Name, Token);
+    not_found ->
+      UserName = maps:get(<<"login">>, GitHubUser, null),
+      Name = maps:get(<<"name">>, GitHubUser, null),
+      create(Id, UserName, Name, GithubToken);
     FoundUser -> FoundUser
   end,
-  User2 = spellingci_users:github_token(User, Token),
-  User3 = update_auth_token(User2),
-  AuthUser = update(User3),
-  spellingci_users:auth_token(AuthUser).
+  User2 = spellingci_users:github_token(User, GithubToken),
+  update(User2).
 
 -spec update(spellingci_users:user()) -> spellingci_users:user().
 update(User) ->
   sumo:persist(github_users, User).
-
--spec valid_auth_token(spellingci_users:token()) ->
-  {true, spellingci_users:user()} | false.
-valid_auth_token(AuthToken) ->
-  Now = calendar:universal_time(),
-  Conditions = [ {auth_token, AuthToken}
-               , {auth_expires, '>', Now}
-               ],
-  case sumo:find_by(github_users, Conditions) of
-    []     -> false;
-    [User] -> {true, User}
-  end.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% internal functions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
--spec add_days(calendar:datetime(), integer()) -> calendar:datetime().
-add_days({Date, Time}, Days) ->
-  DaysToDate = calendar:date_to_gregorian_days(Date) + Days,
-  NewDate = calendar:gregorian_days_to_date(DaysToDate),
-  {NewDate, Time}.
-
--spec update_auth_token(spellingci_users:user()) -> spellingci_users:user().
-update_auth_token(User) ->
-  Now = calendar:universal_time(),
-  Expires = add_days(Now, 1),
-  UUID = uuid(),
-  User1 = spellingci_users:auth_token(User, UUID),
-  spellingci_users:auth_expires(User1, Expires).
-
--spec uuid() -> binary().
-uuid() ->
-  State = uuid:new(self()),
-  {Uuid, _} = uuid:get_v1(State),
-  UuidString = uuid:uuid_to_string(Uuid),
-  list_to_binary(UuidString).

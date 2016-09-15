@@ -46,11 +46,13 @@ handle(Req, State) ->
     {Code, Req2} ->
       case access_token(Code) of
         {ok, Token} ->
-          AuthToken = spellingci_users_repo:save_token(Token),
+          User = spellingci_users_repo:save_token(Token),
+          UserId = spellingci_users:id(User),
+          Session = spellingci_sessions_repo:create(UserId),
           Url = "/#/repos",
           RedirHeaders = [{<<"Location">>, Url}],
           Req3 = cowboy_req:set_resp_cookie( <<"token">>
-                                           , AuthToken
+                                           , spellingci_sessions:token(Session)
                                            , [{path, <<"/">>}]
                                            , Req2
                                            ),
