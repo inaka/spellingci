@@ -126,8 +126,8 @@ list_repos(_Config) ->
   Repo3 = spellingci_repos_repo:find(3),
 
   % test thru cowboy
-  ok = meck:expect(spellingci_users_repo, valid_auth_token, fun(_) ->
-      {true, User3}
+  ok = meck:expect(spellingci_sessions_repo, valid_session, fun(_) ->
+      {true, #{user_id => 3}}
     end),
   Headers = [{<<"Cookie">>, <<"token=token3">>}],
   {ok, 200, _, Client} = api_call(get, "/repos", Headers),

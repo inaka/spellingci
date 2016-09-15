@@ -49,10 +49,13 @@ trails() ->
                         , sr_entities_handler:state()} when
     Result :: true | {false, binary()}.
 is_authorized(Req, State) ->
-  {AuthToken, _} = cowboy_req:cookie(<<"token">>, Req, undefined),
-  case spellingci_users_repo:valid_auth_token(AuthToken) of
+  {Token, _} = cowboy_req:cookie(<<"token">>, Req, undefined),
+  case spellingci_sessions_repo:valid_session(Token) of
     false        -> {{false, <<"Realm=spellingci">>}, Req, State};
-    {true, User} -> {true, Req, State#{user => User}}
+    {true, Session} ->
+      UserId = spellingci_sessions:user_id(Session),
+      User = spellingci_users_repo:find(UserId),
+      {true, Req, State#{user => User}}
   end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

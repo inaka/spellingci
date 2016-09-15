@@ -10,10 +10,6 @@
         , name/2
         , github_token/1
         , github_token/2
-        , auth_token/1
-        , auth_token/2
-        , auth_expires/1
-        , auth_expires/2
         , synced_at/1
         , synced_at/2
         , updated_at/1
@@ -38,8 +34,6 @@
    , name         := name()
    , username     := username()
    , github_token := token()
-   , auth_token   := token() | undefined
-   , auth_expires := datetime()
    , synced_at    := datetime()
    , created_at   := calendar:datetime()
    , updated_at   := calendar:datetime()
@@ -63,8 +57,6 @@ new(Id, Username, Name, GitHubToken) ->
    , name         => Name
    , username     => Username
    , github_token => GitHubToken
-   , auth_token   => undefined
-   , auth_expires => undefined
    , synced_at    => undefined
    , created_at   => Now
    , updated_at   => Now
@@ -95,22 +87,6 @@ github_token(User) ->
 github_token(User, Value) ->
   User#{github_token => Value}.
 
--spec auth_token(user()) -> token() | undefined.
-auth_token(User) ->
-  maps:get(auth_token, User).
-
--spec auth_token(user(), token()) -> user().
-auth_token(User, Value) ->
-  User#{auth_token => Value}.
-
--spec auth_expires(user()) -> datetime().
-auth_expires(User) ->
-  maps:get(auth_expires, User).
-
--spec auth_expires(user(), calendar:datetime()) -> user().
-auth_expires(User, Value) ->
-  User#{auth_expires => Value}.
-
 -spec synced_at(user()) -> datetime().
 synced_at(User) ->
   maps:get(synced_at, User).
@@ -138,8 +114,6 @@ sumo_schema() ->
     , sumo:new_field(username,      string,   [{length, 255}, not_null])
     , sumo:new_field(name,          string,   [{length, 255}])
     , sumo:new_field(github_token,  string,   [{length, 255}])
-    , sumo:new_field(auth_token,    string,   [{length, 255}])
-    , sumo:new_field(auth_expires,  datetime)
     , sumo:new_field(synced_at,     datetime)
     , sumo:new_field(created_at,    datetime, [not_null])
     , sumo:new_field(updated_at,    datetime, [not_null])

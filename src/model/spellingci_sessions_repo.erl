@@ -4,6 +4,7 @@
 -export([ create/1
         , find/1
         , delete/1
+        , valid_session/1
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,6 +34,17 @@ delete(Token) ->
     false -> not_found
   end.
 
+-spec valid_session(spellingci_sessions:token()) ->
+  {true, spellingci_sessions:session()} | false.
+valid_session(Token) ->
+  Now = calendar:universal_time(),
+  Conditions = [ {token, Token}
+               , {expires_at, '>', Now}
+               ],
+  case sumo:find_by(spellingci_sessions, Conditions) of
+    []        -> false;
+    [Session] -> {true, Session}
+  end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% internal functions
