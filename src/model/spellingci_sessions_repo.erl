@@ -18,7 +18,8 @@ create(UserId) ->
   Repo = spellingci_sessions:new(Token, UserId, Now, ExpiresAt),
   sumo:persist(spellingci_sessions, Repo).
 
--spec find(spellingci_sessions:token()) -> spellingci_sessions:session() | not_found.
+-spec find(spellingci_sessions:token()) ->
+  spellingci_sessions:session() | not_found.
 find(Token) ->
   case sumo:find(spellingci_sessions, Token) of
     notfound -> not_found;
