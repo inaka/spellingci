@@ -25,7 +25,9 @@
         {disc_copies, here}
       ]}
     ]},
-    {docs, [ {github_users, spellingci_store, #{module => spellingci_users}}
+    {docs, [ {github_users, spellingci_store, #{module => spellingci_users}},
+             {github_repos, spellingci_store, #{module => spellingci_repos}},
+             {spellingci_sessions, spellingci_store, #{module => spellingci_sessions}}
            ]},
     {events, []}
    ]},
