@@ -49,8 +49,12 @@ stop() ->
 %% BEHAVIOUR CALLBACKS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec start(Type::application:start_type(), Args::any()) -> {ok, pid()}.
-start(_Type, _Args) -> {ok, self()}.
+-spec start(Type::application:start_type(), Args::any()) ->
+  {ok, pid()} | {error, term()}.
+start(_Type, _Args) ->
+  GcFrequency =
+    application:get_env(spellingci, sessions_gc_frequency, undefined),
+  spellingci_sup:start_link(GcFrequency).
 
 -spec stop(State::[]) -> ok.
 stop(_State) -> ok.

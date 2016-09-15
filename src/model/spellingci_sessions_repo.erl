@@ -5,6 +5,7 @@
         , find/1
         , delete/1
         , valid_session/1
+        , clean_sessions/0
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -44,6 +45,18 @@ valid_session(Token) ->
   case sumo:find_by(spellingci_sessions, Conditions) of
     []        -> false;
     [Session] -> {true, Session}
+  end.
+
+-spec clean_sessions() -> ok.
+clean_sessions() ->
+  _ = lager:info("Cleaning sessions..."),
+  Now = calendar:universal_time(),
+  Conditions = [{expires_at, '<', Now}],
+  case sumo:find_by(spellingci_sessions, Conditions) of
+    []       -> ok;
+    Sessions ->
+      [delete(spellingci_sessions:token(Session)) || Session <- Sessions],
+      ok
   end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
