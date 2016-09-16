@@ -5,7 +5,6 @@
 
 %% API
 -export([ start_link/0
-        , clean/0
         , force_clean/0
         , change_frequency/1
         ]).
@@ -21,9 +20,7 @@
 
 %%% Types
 -type frequency() :: non_neg_integer().
--type state()     :: #{ gc_frequency := frequency()
-                      , timer        := timer:tref()
-                      }.
+-type state()     :: #{gc_frequency := frequency()}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API
@@ -33,10 +30,6 @@
   {ok, Pid :: pid()} | ignore | {error, Reason :: term()}.
 start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
-
--spec clean() -> ok.
-clean() ->
-  gen_server:call(?MODULE, clean).
 
 -spec force_clean() -> ok.
 force_clean() ->
@@ -50,40 +43,32 @@ change_frequency(Frequency) ->
 %% gen_server Callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec init([frequency()]) -> {ok, state()}.
+-spec init([frequency()]) -> {ok, state(), timeout()}.
 init([]) ->
   GcFrequency =
     application:get_env(spellingci, sessions_gc_frequency, default_frequency()),
-  Timer = create_timer(GcFrequency),
-  {ok, #{ gc_frequency => GcFrequency, timer => Timer}}.
+  {ok, #{gc_frequency => GcFrequency}, to_milis(GcFrequency)}.
 
--spec handle_call(term(), {pid(), term()}, state()) -> {reply, ok, state()}.
-handle_call(clean, _From, #{gc_frequency := GcFrequency} = State) ->
+-spec handle_call(term(), {pid(), term()}, state()) ->
+  {reply, ok, state(), timeout()}.
+handle_call(force_clean, _From, #{gc_frequency := GcFrequency} = State) ->
   ok = spellingci_sessions_repo:clean_sessions(),
-  Timer = create_timer(GcFrequency),
-  {reply, ok, State#{timer => Timer}};
-handle_call( force_clean
-           , _From
-           , #{ gc_frequency := GcFrequency, timer := Timer} = State
-           ) ->
-  {ok, cancel} = timer:cancel(Timer),
+  {reply, ok, State, to_milis(GcFrequency)};
+handle_call(_Request, _From, #{gc_frequency := GcFrequency} = State) ->
+  {reply, ok, State, to_milis(GcFrequency)}.
+
+-spec handle_cast(term(), state()) -> {noreply, state(), timeout()}.
+handle_cast({change_frequency, NewGcFrequency}, State) ->
+  {noreply, State#{gc_frequency => NewGcFrequency}, to_milis(NewGcFrequency)};
+handle_cast(_Request, #{gc_frequency := GcFrequency} = State) ->
+  {noreply, State, to_milis(GcFrequency)}.
+
+-spec handle_info(timeout() | term(), state()) -> {noreply, state(), timeout()}.
+handle_info(timeout, #{gc_frequency := GcFrequency} = State) ->
   ok = spellingci_sessions_repo:clean_sessions(),
-  NewTimer = create_timer(GcFrequency),
-  {reply, ok, State#{timer := NewTimer}};
-handle_call(_Request, _From, State) ->
-  {reply, ok, State}.
-
--spec handle_cast(term(), state()) -> {noreply, state()}.
-handle_cast({change_frequency, NewGcFrequency}, #{timer := Timer} = State) ->
-  {ok, cancel} = timer:cancel(Timer),
-  NewTimer = create_timer(NewGcFrequency),
-  {noreply, State#{gc_frequency => NewGcFrequency, timer => NewTimer}};
-handle_cast(_Request, State) ->
-  {noreply, State}.
-
--spec handle_info(timeout() | term(), state()) -> {noreply, state()}.
-handle_info(_Info, State) ->
-  {noreply, State}.
+  {noreply, State, to_milis(GcFrequency)};
+handle_info(_Info, #{gc_frequency := GcFrequency} = State) ->
+  {noreply, State, to_milis(GcFrequency)}.
 
 -spec terminate( (normal | shutdown | {shutdown, term()} | term())
                , state()
@@ -105,8 +90,5 @@ code_change(_OldVsn, State, _Extra) ->
 -spec default_frequency() -> frequency().
 default_frequency() -> 86400.
 
--spec create_timer(frequency()) -> timer:tref().
-create_timer(Frequency) ->
-  FrequencyMilis = Frequency * 1000,
-  {ok, Timer} = timer:apply_after(FrequencyMilis, ?MODULE, clean, []),
-  Timer.
+-spec to_milis(frequency()) -> frequency().
+to_milis(Frequency) -> Frequency * 1000.
