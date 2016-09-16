@@ -4,6 +4,7 @@
     [
       {http_port, 8080},
       {http_listener_count, 10},
+      {sessions_gc_frequency, 86400}, % one day
 
       %% OAuth
       {github_scope, "repo,user:email"},

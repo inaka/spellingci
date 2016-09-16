@@ -10,6 +10,7 @@
         , github_login/1
         , auth_cookie/1
         , list_repos/1
+        , clean_sessions/1
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -23,6 +24,7 @@ all() ->  [ connect
           , github_login
           , auth_cookie
           , list_repos
+          , clean_sessions
           ].
 
 -spec init_per_suite(config()) -> config().
@@ -143,6 +145,31 @@ list_repos(_Config) ->
 
   ok.
 
+-spec clean_sessions(config()) -> ok.
+clean_sessions(_Config) ->
+  ok = spellingci_session_gc:change_frequency(20000),
+  % Clean the sessions table first
+  ok = delete_sessions(),
+  Session1 = spellingci_sessions_repo:create(1),
+  Session2 = spellingci_sessions_repo:create(1),
+  Session3 = spellingci_sessions_repo:create(2),
+  Session4 = spellingci_sessions_repo:create(3),
+  Session5 = spellingci_sessions_repo:create(1),
+  5 = length(sumo:find_all(spellingci_sessions)),
+  ok = expire_session(Session3),
+  ok = expire_session(Session5),
+  ok = spellingci_session_gc:force_clean(),
+  3 = length(sumo:find_all(spellingci_sessions)),
+  ok = expire_session(Session1),
+  ok = expire_session(Session2),
+  ok = spellingci_session_gc:force_clean(),
+  1 = length(sumo:find_all(spellingci_sessions)),
+  Session4 = spellingci_sessions_repo:find(spellingci_sessions:token(Session4)),
+  ok = expire_session(Session4),
+  ok = spellingci_session_gc:force_clean(),
+  0 = length(sumo:find_all(spellingci_sessions)),
+  ok.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Internal Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -196,3 +223,27 @@ create_user(UserId) ->
                               , <<"UserName", UserIdBin/binary>>
                               , <<"Name", UserIdBin/binary>>
                               , <<"token", UserIdBin/binary>>).
+
+-spec delete_sessions() -> ok.
+delete_sessions() ->
+   _ = sumo:delete_all(spellingci_sessions),
+  ok.
+
+-spec expire_session(spellingci_sessions:session()) -> ok.
+expire_session(Session) ->
+  Token = spellingci_sessions:token(Session),
+  UserId = spellingci_sessions:user_id(Session),
+  CreatedAt = spellingci_sessions:created_at(Session),
+  Session1 = spellingci_sessions:new( Token
+                                    , UserId
+                                    , CreatedAt
+                                    , subtract_days(CreatedAt, 1)
+                                    ),
+  _ = sumo:persist(spellingci_sessions, Session1),
+  ok.
+
+-spec subtract_days(calendar:datetime(), integer()) -> calendar:datetime().
+subtract_days({Date, Time}, Days) ->
+  DaysToDate = calendar:date_to_gregorian_days(Date) - Days,
+  NewDate = calendar:gregorian_days_to_date(DaysToDate),
+  {NewDate, Time}.
