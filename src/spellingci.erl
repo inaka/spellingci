@@ -52,9 +52,7 @@ stop() ->
 -spec start(Type::application:start_type(), Args::any()) ->
   {ok, pid()} | {error, term()}.
 start(_Type, _Args) ->
-  GcFrequency =
-    application:get_env(spellingci, sessions_gc_frequency, undefined),
-  spellingci_sup:start_link(GcFrequency).
+  spellingci_sup:start_link().
 
 -spec stop(State::[]) -> ok.
 stop(_State) -> ok.

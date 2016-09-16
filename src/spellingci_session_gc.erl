@@ -4,7 +4,7 @@
 -behaviour(gen_server).
 
 %% API
--export([ start_link/1
+-export([ start_link/0
         , clean/0
         , force_clean/0
         , change_frequency/1
@@ -21,7 +21,7 @@
 
 %%% Types
 -type frequency() :: non_neg_integer().
-  -type state()   :: #{ gc_frequency := frequency()
+-type state()     :: #{ gc_frequency := frequency()
                       , timer        := timer:tref()
                       }.
 
@@ -29,12 +29,10 @@
 %% Public API
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec start_link(frequency() | undefined) ->
+-spec start_link() ->
   {ok, Pid :: pid()} | ignore | {error, Reason :: term()}.
-start_link(undefined) ->
-  start_link(default_Frequency());
-start_link(GcFrequency) ->
-  gen_server:start_link({local, ?MODULE}, ?MODULE, [GcFrequency], []).
+start_link() ->
+  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 -spec clean() -> ok.
 clean() ->
@@ -53,7 +51,9 @@ change_frequency(Frequency) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -spec init([frequency()]) -> {ok, state()}.
-init([GcFrequency]) ->
+init([]) ->
+  GcFrequency =
+    application:get_env(spellingci, sessions_gc_frequency, default_frequency()),
   Timer = create_timer(GcFrequency),
   {ok, #{ gc_frequency => GcFrequency, timer => Timer}}.
 
@@ -102,8 +102,8 @@ code_change(_OldVsn, State, _Extra) ->
 %% Internal Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec default_Frequency() -> frequency().
-default_Frequency() -> 86400.
+-spec default_frequency() -> frequency().
+default_frequency() -> 86400.
 
 -spec create_timer(frequency()) -> timer:tref().
 create_timer(Frequency) ->

@@ -4,7 +4,7 @@
 -behaviour(supervisor).
 
 %% API
--export([ start_link/1
+-export([ start_link/0
         ]).
 
 %% Supervisor callbacks
@@ -15,10 +15,10 @@
 %% Public API
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec start_link(integer()) ->
+-spec start_link() ->
   {ok, Pid :: pid()} | ignore | {error, Reason :: term()}.
-start_link(GcFrequency) ->
-  supervisor:start_link({local, ?MODULE}, ?MODULE, [GcFrequency]).
+start_link() ->
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Supervisor callbacks
@@ -26,7 +26,7 @@ start_link(GcFrequency) ->
 
 -spec init(any()) ->
   {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
-init([GcFrequency]) ->
+init([]) ->
   SupFlags = #{ strategy  => one_for_one
               , intensity => 1000
               , period    => 3600
@@ -35,7 +35,7 @@ init([GcFrequency]) ->
   SessionsGC = #{ id       => spellingci_session_gc
                 , start    => { spellingci_session_gc
                               , start_link
-                              , [GcFrequency]
+                              , []
                               }
                 , restart  => permanent
                 , shutdown => brutal_kill

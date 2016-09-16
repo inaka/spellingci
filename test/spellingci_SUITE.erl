@@ -155,19 +155,19 @@ clean_sessions(_Config) ->
   Session3 = spellingci_sessions_repo:create(2),
   Session4 = spellingci_sessions_repo:create(3),
   Session5 = spellingci_sessions_repo:create(1),
-  5 = length(mnesia:dirty_all_keys(spellingci_sessions)),
+  5 = length(sumo:find_all(spellingci_sessions)),
   ok = expire_session(Session3),
   ok = expire_session(Session5),
   ok = spellingci_session_gc:force_clean(),
-  3 = length(mnesia:dirty_all_keys(spellingci_sessions)),
+  3 = length(sumo:find_all(spellingci_sessions)),
   ok = expire_session(Session1),
   ok = expire_session(Session2),
   ok = spellingci_session_gc:force_clean(),
-  1 = length(mnesia:dirty_all_keys(spellingci_sessions)),
+  1 = length(sumo:find_all(spellingci_sessions)),
   Session4 = spellingci_sessions_repo:find(spellingci_sessions:token(Session4)),
   ok = expire_session(Session4),
   ok = spellingci_session_gc:force_clean(),
-  0 = length(mnesia:dirty_all_keys(spellingci_sessions)),
+  0 = length(sumo:find_all(spellingci_sessions)),
   ok.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -226,8 +226,7 @@ create_user(UserId) ->
 
 -spec delete_sessions() -> ok.
 delete_sessions() ->
-  Tokens = mnesia:dirty_all_keys(spellingci_sessions),
-  [spellingci_sessions_repo:delete(Token) || Token <- Tokens],
+   _ = sumo:delete_all(spellingci_sessions),
   ok.
 
 -spec expire_session(spellingci_sessions:session()) -> ok.
