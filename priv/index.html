@@ -6,19 +6,24 @@
       <meta charset="utf-8">
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
       <link rel="stylesheet" href="assets/css/spellingci.css">
+      <link rel="stylesheet" href="assets/css/animations.css">
       <title>Spelling CI</title>
   </head>
 
-  <body role="contentinfo" >
+  <body role="contentinfo" ng-controller="BaseController as baseCtrl">
 
-    <!-- Fixed navbar -->
-    <nav id="header" class="navbar">
-        <div class="container">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="#/">Spelling CI</a>
-            </div>
+    <div id="header" class="navbar" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">Spelling CI</a>
         </div>
-    </nav>
+        <div class="navbar">
+          <ul class="nav navbar-nav navbar-right">
+              <li><button class="btn btn-inverse btn-small navbar-btn" ng-show="baseCtrl.logged" ng-click="baseCtrl.logout()">logout</button></li>
+          </ul>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </div>
 
     <div class="container" role="main">
         <div ng-view></div>
@@ -38,15 +43,18 @@
     <script src="assets/javascript/lib/jquery.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-cookies.js"></script>
     <script src="assets/javascript/lib/ui-bootstrap.min.js"></script>
     <script src="assets/javascript/lib/angular-route.js"></script>
     <script src="assets/javascript/lib/angular-resource.js"></script>
     <script src="assets/javascript/spellingci.js"></script>
     <script src="assets/javascript/routes.js"></script>
     <!-- Controllers -->
+    <script src="assets/javascript/controller/baseController.js"></script>
     <script src="assets/javascript/controller/landingController.js"></script>
     <script src="assets/javascript/controller/reposController.js"></script>
     <!-- Services -->
+    <script src="assets/javascript/service/authService.js"></script>
     <script src="assets/javascript/service/repoService.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-app = angular.module('spellingCI', ['ngRoute', 'ngResource', 'ui.bootstrap']);
+app = angular.module('spellingCI', ['ngRoute', 'ngResource', 'ui.bootstrap', 'ngCookies']);
 app.config(['$httpProvider', function($httpProvider) {
 
     $httpProvider.interceptors.push(function($q) {

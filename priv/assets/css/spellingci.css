@@ -1,17 +1,17 @@
 
 /* Header and Footer */
 #header {
-  border-bottom: solid 1px  #c473d1;
+  border-bottom: solid 1px  #E93F3F;
 }
 
 .navbar-brand {
-  font-size: 20px;
-  color: #9973d1;
+  font-size: 35px;
+  color: #000000;
   font-weight: bold;
 }
 
 #footer {
-  background-image: linear-gradient(160deg, #c473d1, #9973d1);
+  background-image: linear-gradient(160deg, #EA0505, #E93F3F);
   color: #fff;
   padding: 2em 1em;
   font-size: 12px;
