@@ -54,8 +54,9 @@ change_frequency(Frequency) ->
 init([]) ->
   GcFrequency =
     application:get_env(spellingci, sessions_gc_frequency, default_frequency()),
-  Timer = create_timer(GcFrequency),
-  {ok, #{ gc_frequency => GcFrequency, timer => Timer}}.
+  GcFrequencyMilis = GcFrequency * 1000,
+  Timer = create_timer(GcFrequencyMilis),
+  {ok, #{ gc_frequency => GcFrequencyMilis, timer => Timer}}.
 
 -spec handle_call(term(), {pid(), term()}, state()) -> {reply, ok, state()}.
 handle_call(clean, _From, #{gc_frequency := GcFrequency} = State) ->
@@ -76,8 +77,9 @@ handle_call(_Request, _From, State) ->
 -spec handle_cast(term(), state()) -> {noreply, state()}.
 handle_cast({change_frequency, NewGcFrequency}, #{timer := Timer} = State) ->
   {ok, cancel} = timer:cancel(Timer),
-  NewTimer = create_timer(NewGcFrequency),
-  {noreply, State#{gc_frequency => NewGcFrequency, timer => NewTimer}};
+  NewGcFrequencyMilis = NewGcFrequency * 1000,
+  NewTimer = create_timer(NewGcFrequencyMilis),
+  {noreply, State#{gc_frequency => NewGcFrequencyMilis, timer => NewTimer}};
 handle_cast(_Request, State) ->
   {noreply, State}.
 
