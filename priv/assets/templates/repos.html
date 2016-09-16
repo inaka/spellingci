@@ -1,12 +1,17 @@
 <div class="container row">
-  <div class="row list-container" ng-show="repoCtrl.repos.length == 0">
-      <p class="text-muted">You haven't got repos in Github</p>
+  <div ng-show="repoCtrl.wait">
+    <div class='uil-rolling-css' style='transform:scale(0.21);'><div><div></div><div></div></div></div>
   </div>
-  <div class="row list-container" ng-hide="repoCtrl.repos.length == 0">
-      <ul class="list-group">
-        <div ng-repeat="repo in repoCtrl.repos | filter:query | orderBy: 'full_name'" class="list-group-item">
-          <a ng-href="{{repo.url}}" target="_blank">{{repo.full_name}}</a>
-        </div>
-      </ul>
+  <div ng-hide="repoCtrl.wait">
+    <div class="row list-container" ng-show="repoCtrl.repos.length == 0">
+        <p class="text-muted">You haven't got repos in Github</p>
+    </div>
+    <div class="row list-container" ng-hide="repoCtrl.repos.length == 0">
+        <ul class="list-group">
+          <div ng-repeat="repo in repoCtrl.repos | filter:query | orderBy: 'full_name'" class="list-group-item">
+            <a ng-href="{{repo.url}}" target="_blank">{{repo.full_name}}</a>
+          </div>
+        </ul>
+    </div>
   </div>
 </div>

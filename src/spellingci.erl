@@ -80,6 +80,7 @@ start_phase(start_cowboy_listeners, _StartType, []) ->
   Handlers = [ spellingci_login_handler
              , spellingci_callback_handler
              , spellingci_repos_handler
+             , spellingci_logout_handler
              ],
 
   % Get the trails for each handler
