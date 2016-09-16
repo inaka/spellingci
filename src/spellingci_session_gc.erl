@@ -47,28 +47,28 @@ change_frequency(Frequency) ->
 init([]) ->
   GcFrequency =
     application:get_env(spellingci, sessions_gc_frequency, default_frequency()),
-  {ok, #{gc_frequency => GcFrequency}, to_milis(GcFrequency)}.
+  {ok, #{gc_frequency => GcFrequency}, to_ms(GcFrequency)}.
 
 -spec handle_call(term(), {pid(), term()}, state()) ->
   {reply, ok, state(), timeout()}.
 handle_call(force_clean, _From, #{gc_frequency := GcFrequency} = State) ->
   ok = spellingci_sessions_repo:clean_sessions(),
-  {reply, ok, State, to_milis(GcFrequency)};
+  {reply, ok, State, to_ms(GcFrequency)};
 handle_call(_Request, _From, #{gc_frequency := GcFrequency} = State) ->
-  {reply, ok, State, to_milis(GcFrequency)}.
+  {reply, ok, State, to_ms(GcFrequency)}.
 
 -spec handle_cast(term(), state()) -> {noreply, state(), timeout()}.
 handle_cast({change_frequency, NewGcFrequency}, State) ->
-  {noreply, State#{gc_frequency => NewGcFrequency}, to_milis(NewGcFrequency)};
+  {noreply, State#{gc_frequency => NewGcFrequency}, to_ms(NewGcFrequency)};
 handle_cast(_Request, #{gc_frequency := GcFrequency} = State) ->
-  {noreply, State, to_milis(GcFrequency)}.
+  {noreply, State, to_ms(GcFrequency)}.
 
 -spec handle_info(timeout() | term(), state()) -> {noreply, state(), timeout()}.
 handle_info(timeout, #{gc_frequency := GcFrequency} = State) ->
   ok = spellingci_sessions_repo:clean_sessions(),
-  {noreply, State, to_milis(GcFrequency)};
+  {noreply, State, to_ms(GcFrequency)};
 handle_info(_Info, #{gc_frequency := GcFrequency} = State) ->
-  {noreply, State, to_milis(GcFrequency)}.
+  {noreply, State, to_ms(GcFrequency)}.
 
 -spec terminate( (normal | shutdown | {shutdown, term()} | term())
                , state()
@@ -90,5 +90,5 @@ code_change(_OldVsn, State, _Extra) ->
 -spec default_frequency() -> frequency().
 default_frequency() -> 86400.
 
--spec to_milis(frequency()) -> frequency().
-to_milis(Frequency) -> Frequency * 1000.
+-spec to_ms(frequency()) -> frequency().
+to_ms(Frequency) -> Frequency * 1000.
