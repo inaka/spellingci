@@ -5,6 +5,7 @@
         , create/6
         , update/1
         , repos/1
+        , sync/1
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -42,6 +43,10 @@ repos(User) ->
     _         -> find_by_user(User)
   end.
 
+-spec sync(spellingci_users:user()) -> [spellingci_repos:repo()].
+sync(User) ->
+  from_github(User).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Internal Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,6 +68,7 @@ from_github(User) ->
   Now = calendar:universal_time(),
   User2 = spellingci_users:synced_at(User, Now),
   User2 = spellingci_users_repo:update(User2),
+  ok = delete_by_user(User),
   [create_from_github(User, GR) || GR <- GithubRepos].
 
 -spec create_from_github(spellingci_users:user(), map()) ->
@@ -75,3 +81,9 @@ create_from_github(User, GithubRepo) ->
   Url = maps:get(<<"html_url">>, GithubRepo),
   Private = maps:get(<<"private">>, GithubRepo),
   create(Id, UserId, Name, FullName, Url, Private).
+
+-spec delete_by_user(spellingci_users:user()) -> ok.
+delete_by_user(User) ->
+  Conditions = [{user_id, spellingci_users:id(User)}],
+  _ = sumo:delete_by(github_repos, Conditions),
+  ok.

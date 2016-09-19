@@ -1,4 +1,4 @@
-<div class="container row">
+<div class="container row list">
   <div ng-show="repoCtrl.wait">
     <div class='uil-rolling-css' style='transform:scale(0.21);'><div><div></div><div></div></div></div>
   </div>
@@ -14,4 +14,9 @@
         </ul>
     </div>
   </div>
+</div>
+<div class="container row buttons" ng-hide="repoCtrl.wait">
+  <button class="btn btn-default btn-small pull-left" ng-click="repoCtrl.sync()">
+    <span class="glyphicon glyphicon-refresh"></span> Sync
+  </button>
 </div>

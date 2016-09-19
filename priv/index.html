@@ -12,33 +12,35 @@
 
   <body role="contentinfo" ng-controller="BaseController as baseCtrl">
 
-    <div id="header" class="navbar" role="navigation">
+    <div id="header" class="navbar navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
           <a class="navbar-brand" href="#">Spelling CI</a>
         </div>
         <div class="navbar">
           <ul class="nav navbar-nav navbar-right">
-              <li><button class="btn btn-inverse btn-small navbar-btn" ng-show="baseCtrl.logged" ng-click="baseCtrl.logout()">logout</button></li>
+              <li>
+                <button class="btn btn-default btn-small navbar-btn" ng-show="baseCtrl.logged" ng-click="baseCtrl.logout()">
+                  <span class="glyphicon glyphicon-log-out"></span> Logout
+                </button>
+              </li>
           </ul>
-        </div><!--/.navbar-collapse -->
+        </div>
       </div>
     </div>
 
-    <div class="container" role="main">
+    <div class="container main" role="main">
         <div ng-view></div>
     </div>
 
-    <div class="container">
-        <nav id="footer" class="navbar navbar-fixed-bottom">
-            <div class="row text-center">
-                <a href="https://github.com/inaka/spellingci" target="_blank" class="link-source"><img title="view the source code" src="assets/img/github.png"/></a>
-            </div>
-            <div class="row text-center">
-                <span>Powered by <a href="http://inaka.net" target="_blank" class="link-source">Inaka</a></span>
-            </div>
-        </nav>
-    </div>
+    <nav id="footer" class="navbar navbar-fixed-bottom">
+        <div class="row text-center">
+            <a href="https://github.com/inaka/spellingci" target="_blank" class="link-source"><img title="view the source code" src="assets/img/github.png"/></a>
+        </div>
+        <div class="row text-center">
+            <span>Powered by <a href="http://inaka.net" target="_blank" class="link-source">Inaka</a></span>
+        </div>
+    </nav>
 
     <script src="assets/javascript/lib/jquery.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" crossorigin="anonymous"></script>
