@@ -178,8 +178,7 @@ sync_repos(_Config) ->
   2 = length(ReposDecoded),
 
   _ = meck:unload(),
-  ok = clean_database(),
-  ok.
+  clean_database().
 
 -spec clean_sessions(config()) -> ok.
 clean_sessions(_Config) ->
