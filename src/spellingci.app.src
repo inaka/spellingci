@@ -12,7 +12,8 @@
     jiffy,
     lager,
     sumo_db,
-    egithub
+    egithub,
+    mnesia
   ]},
   {modules, []},
   {mod, {spellingci, []}},
