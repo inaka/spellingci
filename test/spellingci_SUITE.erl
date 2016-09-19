@@ -10,6 +10,7 @@
         , github_login/1
         , auth_cookie/1
         , list_repos/1
+        , sync_repos/1
         , clean_sessions/1
         ]).
 
@@ -24,6 +25,7 @@ all() ->  [ connect
           , github_login
           , auth_cookie
           , list_repos
+          , sync_repos
           , clean_sessions
           ].
 
@@ -94,6 +96,7 @@ auth_cookie(_Config) ->
     end),
   {ok, 400, _, _} = api_call("/oauth/callback?code=1234"),
   [_, _] = meck:unload(),
+  ok = clean_database(),
   ok.
 
 -spec list_repos(config()) -> ok.
@@ -102,12 +105,8 @@ list_repos(_Config) ->
   User2 = create_user(2),
   User3 = create_user(3),
 
-  ok = meck:expect(egithub, oauth, fun(Token) ->
-      {oauth, Token}
-    end),
-  ok = meck:expect(egithub, repos, fun(_Token, _Opts) ->
-      {ok, []}
-    end),
+  ok = mock_egithub_oauth(),
+  ok = mock_egithub_repos([]),
   [] = spellingci_repos_repo:repos(User1),
   [] = spellingci_repos_repo:repos(User2),
   Repo1 = create_repo(1, 1),
@@ -142,8 +141,44 @@ list_repos(_Config) ->
   _ = meck:unload(),
 
   {ok, 401, _, _} = api_call(get, "/repos", Headers),
-
+  ok = clean_database(),
   ok.
+
+-spec sync_repos(config()) -> ok.
+sync_repos(_Config) ->
+  User1 = create_user(1),
+  ok = mock_egithub_oauth(),
+  ok = mock_egithub_repos([]),
+  [] = spellingci_repos_repo:repos(User1),
+  UserSync = spellingci_users_repo:find(1),
+  ok = mock_egithub_repos([#{ <<"id">>        => 1
+                            , <<"name">>      => <<"repofromgithub">>
+                            , <<"html_url">>  => <<"http://url">>
+                            , <<"private">>   => false
+                            , <<"full_name">> => <<"full/Name">>
+                            },
+                           #{ <<"id">>        => 2
+                            , <<"name">>      => <<"repofromgithub2">>
+                            , <<"html_url">>  => <<"http://url2">>
+                            , <<"private">>   => false
+                            , <<"full_name">> => <<"full/Name2">>
+                            }]),
+  [] = spellingci_repos_repo:repos(UserSync),
+  Repos = spellingci_repos_repo:sync(UserSync),
+  2 = length(Repos),
+
+  % test thru cowboy
+  ok = meck:expect(spellingci_sessions_repo, valid_session, fun(_) ->
+      {true, #{user_id => 1}}
+    end),
+  Headers = [{<<"Cookie">>, <<"token=token1">>}],
+  {ok, 200, _, Client} = api_call(get, "/repos/sync", Headers),
+  {ok, Json} = hackney:body(Client),
+  ReposDecoded = jiffy:decode(Json, [return_maps]),
+  2 = length(ReposDecoded),
+
+  _ = meck:unload(),
+  clean_database().
 
 -spec clean_sessions(config()) -> ok.
 clean_sessions(_Config) ->
@@ -247,3 +282,23 @@ subtract_days({Date, Time}, Days) ->
   DaysToDate = calendar:date_to_gregorian_days(Date) - Days,
   NewDate = calendar:gregorian_days_to_date(DaysToDate),
   {NewDate, Time}.
+
+-spec clean_database() -> ok.
+clean_database() ->
+  _ = sumo:delete_all(github_users),
+  _ = sumo:delete_all(github_repos),
+  ok.
+
+-spec mock_egithub_oauth() -> ok.
+mock_egithub_oauth() ->
+  _ = meck:expect(egithub, oauth, fun(Token) ->
+      {oauth, Token}
+    end),
+  ok.
+
+-spec mock_egithub_repos([map()]) -> ok.
+mock_egithub_repos(Repos) ->
+  _ = meck:expect(egithub, repos, fun(_Token, _Opts) ->
+      {ok, Repos}
+    end),
+  ok.
