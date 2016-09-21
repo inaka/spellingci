@@ -59,7 +59,8 @@ trails() ->
   {halt | true, cowboy_req:req(), sr_entities_handler:state()}.
 handle_post(Req, State) ->
   case common_handler(on, Req, State) of
-    {ok, Result} -> Result;
+    {ok, Result} ->
+      Result;
     {error, {Code, Req1, State1}} ->
       {ok, Req2} = cowboy_req:reply(Code, Req1),
       {halt, Req2, State1}
@@ -70,7 +71,8 @@ handle_post(Req, State) ->
   {boolean(), cowboy_req:req(), sr_single_entity_handler:state()}.
 delete_resource(Req, State) ->
   case common_handler(off, Req, State) of
-    {ok, Result} -> Result;
+    {ok, Result} ->
+      Result;
     {error, {Code, Req1, State1}} ->
       {ok, Req2} = cowboy_req:reply(Code, Req1),
       {false, Req2, State1}
