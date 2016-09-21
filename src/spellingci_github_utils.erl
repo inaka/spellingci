@@ -82,22 +82,22 @@ webhook_common(Status, RepoFullName, User) ->
 webhook_action(on, RepoFullName, User) ->
   create_webhook(User, RepoFullName);
 webhook_action(off, RepoFullName, User) ->
- delete_webhook(User, RepoFullName).
+  delete_webhook(User, RepoFullName).
 
 -spec create_webhook(spellingci_users:user(), spellingci_repos:name()) -> ok.
 create_webhook(User, RepoFullName) ->
- case already_hooked(User, RepoFullName) of
-   false ->
-     Events = ["pull_request"],
-     Token = spellingci_users:github_token(User),
-     Cred = egithub:oauth(Token),
-     {ok, WebhookUrl} = application:get_env(spellingci, webhook_url),
-     {ok, _Result} =
-       egithub:create_webhook(Cred, RepoFullName, WebhookUrl, Events),
-     ok;
-   {true, _Hook} ->
-     ok
- end.
+  case already_hooked(User, RepoFullName) of
+    false ->
+      Events = ["pull_request"],
+      Token = spellingci_users:github_token(User),
+      Cred = egithub:oauth(Token),
+      {ok, WebhookUrl} = application:get_env(spellingci, webhook_url),
+      {ok, _Result} =
+        egithub:create_webhook(Cred, RepoFullName, WebhookUrl, Events),
+      ok;
+    {true, _Hook} ->
+      ok
+  end.
 
 -spec delete_webhook(spellingci_users:user(), spellingci_repos:name()) -> ok.
 delete_webhook(User, RepoFullName) ->

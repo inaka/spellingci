@@ -216,7 +216,8 @@ add_webhook(_Config) ->
                                      , <<"name1">>
                                      , <<"fullname/1">>
                                      , <<"http://url1">>
-                                     , false),
+                                     , false
+                                     ),
   ok = mock_egithub_oauth(),
   ok = mock_valid_session(#{user_id => 1}),
   ok = meck:expect(spellingci_repos, from_json, fun(_) ->

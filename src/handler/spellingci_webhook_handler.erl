@@ -26,12 +26,23 @@
 
 -spec trails() -> trails:trails().
 trails() ->
+  RequestBody =
+    #{ name => <<"Repository">>
+     , in => body
+     , description =>
+        <<"Repository user wants to add/remove webhook (as json)">>
+     , required => true
+     },
   Metadata =
     #{ post =>
        #{ description => "Adds SpellingCI webhook to repository"
+        , consumes => ["application/json", "application/json;charset=UTF-8"]
+        , parameters => [RequestBody]
         }
      , delete =>
        #{ description => "Removes SpellingCI webhook from repository"
+        , consumes => ["application/json", "application/json;charset=UTF-8"]
+        , parameters => [RequestBody]
         }
      },
   Path = "/webhook",
@@ -47,12 +58,23 @@ trails() ->
 -spec handle_post(cowboy_req:req(), sr_entities_handler:state()) ->
   {halt | true, cowboy_req:req(), sr_entities_handler:state()}.
 handle_post(Req, State) ->
-  common_handler(on, Req, State).
+  case common_handler(on, Req, State) of
+    {ok, Result} -> Result;
+    {error, {Code, Req1, State1}} ->
+      {ok, Req2} = cowboy_req:reply(Code, Req1),
+      {halt, Req2, State1}
+  end.
+
 
 -spec delete_resource(cowboy_req:req(), sr_single_entity_handler:state()) ->
   {boolean(), cowboy_req:req(), sr_single_entity_handler:state()}.
 delete_resource(Req, State) ->
-  common_handler(off, Req, State).
+  case common_handler(off, Req, State) of
+    {ok, Result} -> Result;
+    {error, {Code, Req1, State1}} ->
+      {ok, Req2} = cowboy_req:reply(Code, Req1),
+      {false, Req2, State1}
+  end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private Functions
@@ -61,7 +83,10 @@ delete_resource(Req, State) ->
 -spec common_handler( spellingci_repos:status()
                     , cowboy_req:req()
                     , sr_single_entity_handler:state()) ->
-  {boolean(), cowboy_req:req(), sr_single_entity_handler:state()}.
+  {true , cowboy_req:req(), sr_single_entity_handler:state()} |
+  { error
+  , {non_neg_integer(), cowboy_req:req(), sr_single_entity_handler:state()}
+  }.
 common_handler(RepoState, Req, #{user := User} = State) ->
   try
     {ok, Body, Req2} = cowboy_req:body(Req),
@@ -70,17 +95,13 @@ common_handler(RepoState, Req, #{user := User} = State) ->
     FullName = spellingci_repos:full_name(Repo),
     case webhook_action(RepoState, FullName, User) of
       ok ->
-        {true, Req2, State};
+        {ok, {true, Req2, State}};
       {error, private_repo} ->
-        Error = "Only public repos are allowed",
-        _ = lager:error(Error),
-        {ok, Req3} = cowboy_req:reply(403, Req2),
-        {false, Req3, State}
+        _ = lager:error("Only public repos are allowed"),
+        {error, {403, Req2, State}}
     end
   catch
-    _:badjson ->
-    {ok, Req1} = cowboy_req:reply(400, Req),
-    {false, Req1, State}
+    _:badjson -> {error, {400, Req, State}}
   end.
 
 -spec webhook_action( spellingci_repos:status()
