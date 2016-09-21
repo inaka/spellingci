@@ -16,6 +16,7 @@
         , created_at/1
         , updated_at/1
         , updated_at/2
+        , from_github/1
         ]).
 
 %%% sumo_db callbacks
@@ -55,6 +56,7 @@
               , name/0
               , url/0
               , private/0
+              , status/0
               ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -125,6 +127,17 @@ updated_at(Repo) ->
 -spec updated_at(repo(), calendar:datetime()) -> repo().
 updated_at(Repo, Value) ->
   Repo#{updated_at => Value}.
+
+-spec from_github(map()) -> repo().
+from_github(GithubRepo) ->
+  Owner = maps:get(<<"owner">>, GithubRepo),
+  Id = maps:get(<<"id">>, GithubRepo),
+  UserId = maps:get(<<"id">>, Owner),
+  Name = maps:get(<<"name">>, GithubRepo),
+  FullName = maps:get(<<"full_name">>, GithubRepo),
+  Url = maps:get(<<"html_url">>, GithubRepo),
+  Private = maps:get(<<"private">>, GithubRepo),
+  new(Id, UserId, Name, FullName, Url, Private).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% sumo_db callbacks

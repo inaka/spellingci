@@ -12,6 +12,7 @@
         , list_repos/1
         , sync_repos/1
         , clean_sessions/1
+        , add_webhook/1
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -27,6 +28,7 @@ all() ->  [ connect
           , list_repos
           , sync_repos
           , clean_sessions
+          , add_webhook
           ].
 
 -spec init_per_suite(config()) -> config().
@@ -121,6 +123,7 @@ list_repos(_Config) ->
              , <<"html_url">>  => <<"http://url">>
              , <<"private">>   => false
              , <<"full_name">> => <<"full/Name">>
+             , <<"owner">>     => #{<<"id">> => 3}
              }]}
     end),
   [Repo3] = spellingci_repos_repo:repos(User3),
@@ -156,21 +159,21 @@ sync_repos(_Config) ->
                             , <<"html_url">>  => <<"http://url">>
                             , <<"private">>   => false
                             , <<"full_name">> => <<"full/Name">>
+                            , <<"owner">>     => #{<<"id">> => 1}
                             },
                            #{ <<"id">>        => 2
                             , <<"name">>      => <<"repofromgithub2">>
                             , <<"html_url">>  => <<"http://url2">>
                             , <<"private">>   => false
                             , <<"full_name">> => <<"full/Name2">>
+                            , <<"owner">>     => #{<<"id">> => 1}
                             }]),
   [] = spellingci_repos_repo:repos(UserSync),
   Repos = spellingci_repos_repo:sync(UserSync),
   2 = length(Repos),
 
   % test thru cowboy
-  ok = meck:expect(spellingci_sessions_repo, valid_session, fun(_) ->
-      {true, #{user_id => 1}}
-    end),
+  ok = mock_valid_session(#{user_id => 1}),
   Headers = [{<<"Cookie">>, <<"token=token1">>}],
   {ok, 200, _, Client} = api_call(get, "/repos/sync", Headers),
   {ok, Json} = hackney:body(Client),
@@ -205,6 +208,53 @@ clean_sessions(_Config) ->
   0 = length(sumo:find_all(spellingci_sessions)),
   ok.
 
+-spec add_webhook(config()) -> ok.
+add_webhook(_Config) ->
+  _User1 = create_user(1),
+  Repo = spellingci_repos_repo:create( 1
+                                     , 1
+                                     , <<"name1">>
+                                     , <<"fullname/1">>
+                                     , <<"http://url1">>
+                                     , false),
+  ok = mock_egithub_oauth(),
+  ok = mock_valid_session(#{user_id => 1}),
+  ok = meck:expect(spellingci_repos, from_json, fun(_) ->
+      {ok, #{full_name => <<"fullname/1">>}}
+    end),
+  ok = meck:expect(egithub, repo, fun(_, _) ->
+    {ok, #{ <<"id">>        => 1
+          , <<"name">>      => <<"name1">>
+          , <<"html_url">>  => <<"http://url1">>
+          , <<"private">>   => false
+          , <<"full_name">> => <<"fullname/1">>
+          , <<"owner">>     => #{<<"id">> => 1}
+         }}
+    end),
+  ok = meck:expect(spellingci_github_utils, already_hooked, fun(_, _) ->
+      false
+    end),
+  ok = meck:expect(egithub, create_webhook, fun(_, _, _, _) ->
+      {ok, result}
+    end),
+  Headers = [{<<"content-type">>, <<"application/json">>}],
+  {ok, 204, _, _} =
+    api_call(post, "/webhook", Headers, <<"{\"full_name\":\"fullname/1\"}">>),
+
+  off = spellingci_repos:status(Repo),
+  Repo1 = spellingci_repos_repo:find(1),
+  on = spellingci_repos:status(Repo1),
+
+  {ok, 204, _, _} =
+    api_call(delete, "/webhook", Headers, <<"{\"full_name\":\"fullname/1\"}">>),
+
+  on = spellingci_repos:status(Repo1),
+  Repo2 = spellingci_repos_repo:find(1),
+  off = spellingci_repos:status(Repo2),
+
+  _ = meck:unload(),
+  clean_database().
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Internal Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -232,9 +282,14 @@ api_call(Method, Url) ->
                                           | {ok, integer(), list()}
                                           | {error, term()}.
 api_call(Method, Url, Headers) ->
+  api_call(Method, Url, Headers, <<>>).
+
+-spec api_call(atom(), iodata(), list(), term()) ->
+  {ok, integer(), list(), term()} | {ok, integer(), list()} | {error, term()}.
+api_call(Method, Url, Headers, Body) ->
   {ok, Port} = application:get_env(spellingci, http_port),
   Url2 = [<<"http://localhost:">>, integer_to_list(Port), Url],
-  hackney:request(Method, Url2, Headers).
+  hackney:request(Method, Url2, Headers, Body).
 
 -spec has_cookie(list()) -> boolean().
 has_cookie(Headers) ->
@@ -300,5 +355,12 @@ mock_egithub_oauth() ->
 mock_egithub_repos(Repos) ->
   _ = meck:expect(egithub, repos, fun(_Token, _Opts) ->
       {ok, Repos}
+    end),
+  ok.
+
+-spec mock_valid_session(map()) -> ok.
+mock_valid_session(Session) ->
+  ok = meck:expect(spellingci_sessions_repo, valid_session, fun(_) ->
+      {true, Session}
     end),
   ok.

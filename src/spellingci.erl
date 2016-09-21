@@ -82,6 +82,7 @@ start_phase(start_cowboy_listeners, _StartType, []) ->
              , spellingci_repos_handler
              , spellingci_logout_handler
              , spellingci_repos_sync_handler
+             , spellingci_webhook_handler
              ],
 
   % Get the trails for each handler

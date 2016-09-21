@@ -1,5 +1,5 @@
-angular.module('spellingCI').controller('ReposController', ['$window', '$scope', 'Repo',
-  function($window, $scope, Repo){
+angular.module('spellingCI').controller('ReposController', ['$window', '$scope', 'Repo', 'Webhook',
+  function($window, $scope, Repo, Webhook){
     var controller = this;
     controller.wait = true;
     controller.repos = [];
@@ -11,6 +11,22 @@ angular.module('spellingCI').controller('ReposController', ['$window', '$scope',
         controller.repos = data;
         controller.wait = false;
       });
+    }
+
+    controller.updateWebhook = function(repo) {
+      if(repo.checked) {
+        var repoToSend = angular.copy(repo);
+        repoToSend.status = "on";
+        Webhook.add(repoToSend).success(function(data) {
+
+        });
+      } else {
+        var repoToSend = angular.copy(repo);
+        repoToSend.status = "off";
+        Webhook.remove(repoToSend).success(function(data) {
+
+        });
+      }
     }
 
     function getRepos() {
