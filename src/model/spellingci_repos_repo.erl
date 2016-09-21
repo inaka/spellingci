@@ -74,16 +74,27 @@ from_github(User) ->
 -spec create_from_github(spellingci_users:user(), map()) ->
   spellingci_repos:repo().
 create_from_github(User, GithubRepo) ->
-  Id = maps:get(<<"id">>, GithubRepo),
-  UserId = spellingci_users:id(User),
-  Name = maps:get(<<"name">>, GithubRepo),
-  FullName = maps:get(<<"full_name">>, GithubRepo),
-  Url = maps:get(<<"html_url">>, GithubRepo),
-  Private = maps:get(<<"private">>, GithubRepo),
-  create(Id, UserId, Name, FullName, Url, Private).
+  Repo = spellingci_repos:from_github(GithubRepo),
+  Id = spellingci_repos:id(Repo),
+  UserId = spellingci_repos:user_id(Repo),
+  Name = spellingci_repos:name(Repo),
+  FullName = spellingci_repos:full_name(Repo),
+  Url = spellingci_repos:url(Repo),
+  Private = spellingci_repos:private(Repo),
+  RepoDB = create(Id, UserId, Name, FullName, Url, Private),
+  RepoDB2 = spellingci_repos:status(RepoDB, repo_status(User, FullName)),
+  update(RepoDB2).
 
 -spec delete_by_user(spellingci_users:user()) -> ok.
 delete_by_user(User) ->
   Conditions = [{user_id, spellingci_users:id(User)}],
   _ = sumo:delete_by(github_repos, Conditions),
   ok.
+
+-spec repo_status(spellingci_users:user(), spellingci_repos:name()) ->
+  spellingci_repos:status().
+repo_status(User, RepoFullName) ->
+  case spellingci_github_utils:already_hooked(User, RepoFullName) of
+    false -> off;
+    _ -> on
+  end.

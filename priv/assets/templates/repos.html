@@ -10,6 +10,7 @@
         <ul class="list-group">
           <div ng-repeat="repo in repoCtrl.repos | filter:query | orderBy: 'full_name'" class="list-group-item">
             <a ng-href="{{repo.url}}" target="_blank">{{repo.full_name}}</a>
+            <input type="checkbox" name="my-checkbox" ng-model="repo.checked" ng-checked="{{repo.status == 'on'}}" ng-click="repoCtrl.updateWebhook(repo)"/>
           </div>
         </ul>
     </div>
