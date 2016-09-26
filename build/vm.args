@@ -1,5 +1,5 @@
 ## Name of the node
--name spellingci@172.2.0.10
+-name spellingci@172.4.0.24
 
 ## Cookie for distributed erlang
 -setcookie spellingci

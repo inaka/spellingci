@@ -10,7 +10,7 @@ services:
      - "9090:8080"
     networks:
       app_net:
-        ipv4_address: 172.2.0.10
+        ipv4_address: 172.4.0.24
       default:
 
 networks:
@@ -19,5 +19,5 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.2.0.0/24
-        gateway: 172.2.0.1
+      - subnet: 172.4.0.0/24
+        gateway: 172.4.0.1
