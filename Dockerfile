@@ -1,4 +1,4 @@
-FROM debian:jessie
+    FROM debian:jessie
 
 RUN apt-get clean &&\
     apt-get -y update && \
@@ -29,6 +29,6 @@ WORKDIR /myapp
 COPY . /myapp
 
 RUN rebar3 release
-COPY build/sys.config _rel/elvis_server/releases/0.1.0/sys.config
+COPY build/sys.config _build/default/rel/spellingci/releases/0.0.1/sys.config
 COPY build/vm.args _build/default/rel/spellingci/releases/0.0.1/vm.args
 COPY build/spellingci.monit.conf /etc/monit/conf.d/spellingci.conf
