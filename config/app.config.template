@@ -7,6 +7,10 @@
       {sessions_gc_frequency, 86400}, % one day
       {webhook_url, "https://localhost:8080/webhook/callback"},
 
+      %% Github Commenter
+      {github_user, "1234"},
+      {github_password, "1234"},
+
       %% OAuth
       {github_scope, "repo,user:email"},
       {github_client_id, "1234"},

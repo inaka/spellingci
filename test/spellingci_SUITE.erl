@@ -13,6 +13,7 @@
         , sync_repos/1
         , clean_sessions/1
         , add_webhook/1
+        , webhook/1
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -29,6 +30,7 @@ all() ->  [ connect
           , sync_repos
           , clean_sessions
           , add_webhook
+          , webhook
           ].
 
 -spec init_per_suite(config()) -> config().
@@ -252,6 +254,43 @@ add_webhook(_Config) ->
   on = spellingci_repos:status(Repo1),
   Repo2 = spellingci_repos_repo:find(1),
   off = spellingci_repos:status(Repo2),
+
+  _ = meck:unload(),
+  clean_database().
+
+-spec webhook(config()) -> ok.
+webhook(_Config) ->
+  _User1 = create_user(1),
+  Data = #{<<"repository">> =>
+            #{ <<"id">>        => 1
+             , <<"name">>      => <<"name1">>
+             , <<"html_url">>  => <<"http://url1">>
+             , <<"private">>   => false
+             , <<"full_name">> => <<"fullname/1">>
+             , <<"owner">>     => #{<<"id">> => 1}
+             }},
+  Cred = {basic, "user", "password"},
+  GithubFile = #{ <<"filename">> => <<"file1.txt">>
+                , <<"raw_url">>  =>
+                  <<"https://github.com/user/spell5/raw/",
+                    "64cb5743567e5df8ed7c05144af5bf1139edfad5/file1.txt">>
+                , <<"patch">>    => <<"@@ -1,5 +1,5 @@\n Line\n">>
+                },
+  _ = meck:expect(egithub, file_content, fun(_, _, _, _) ->
+      {ok, "wrrong word"}
+    end),
+  _ = meck:expect(egithub_webhook, event, fun(_, _, _, _, _, _) ->
+      ok
+    end),
+
+  {ok, [_Comment]} =
+    spellingci_webhook:handle_pull_request(Cred, Data, [GithubFile]),
+
+  % thru cowboy
+  Headers = [{<<"content-type">>, <<"application/json">>}],
+  {ok, 204, _, Client} =
+    api_call(get, "/webhook/callback", Headers, jiffy:encode(Data)),
+  {ok, <<>>} = hackney:body(Client),
 
   _ = meck:unload(),
   clean_database().

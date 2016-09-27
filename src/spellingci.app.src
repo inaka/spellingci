@@ -13,7 +13,8 @@
     lager,
     sumo_db,
     egithub,
-    mnesia
+    mnesia,
+    sheldon
   ]},
   {modules, []},
   {mod, {spellingci, []}},
