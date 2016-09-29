@@ -23,7 +23,7 @@ create(UserId) ->
 -spec find(spellingci_sessions:token()) ->
   spellingci_sessions:session() | not_found.
 find(Token) ->
-  case sumo:find(spellingci_sessions, Token) of
+  case sumo:fetch(spellingci_sessions, Token) of
     notfound -> not_found;
     Session  -> Session
   end.
