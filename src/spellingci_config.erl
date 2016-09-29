@@ -27,8 +27,8 @@ default() ->
 
 -spec normalize(map()) -> config().
 normalize(Config) ->
-  #{ extensions => normalize_extensions(Config)
-   , sheldon_config    => normalize_sheldon_config(Config)
+  #{ extensions     => normalize_extensions(Config)
+   , sheldon_config => normalize_sheldon_config(Config)
    }.
 
 -spec sheldon_config(config()) -> sheldon_config:config().

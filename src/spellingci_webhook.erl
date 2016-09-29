@@ -159,7 +159,6 @@ check_extension(FileName, [Extension | Rest]) ->
 get_config(Cred, Repo, Branch) ->
   case egithub:file_content(Cred, Repo, Branch, "spellingci.json") of
     {ok, ConfigContent} ->
-      ct:print("~p~n", [ConfigContent]),
       Config = jiffy:decode(ConfigContent, [return_maps]),
       spellingci_config:normalize(Config);
     {error, _} ->
