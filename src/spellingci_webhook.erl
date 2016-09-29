@@ -13,6 +13,7 @@
                       }.
 -type words_per_line() :: {non_neg_integer(), [string()]}.
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% API
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,10 +27,13 @@ handle_pull_request(Cred, Data, GithubFiles) ->
   #{<<"repository">> := GithubRepo} = Data,
   Repo = spellingci_repos:from_github(GithubRepo),
   RepoFullName = binary_to_list(spellingci_repos:full_name(Repo)),
-  GithubFiles2 = filter_files(GithubFiles),
+  #{<<"pull_request">> := #{<<"head">> := #{<<"ref">> := BranchName}}} = Data,
+  Branch = binary_to_list(BranchName),
+  Config = get_config(Cred, RepoFullName, Branch),
+  GithubFiles2 = filter_files(GithubFiles, Config),
   FileInfoFun = fun (File) -> file_info(Cred, RepoFullName, File) end,
   FilesInfo = lists:map(FileInfoFun, GithubFiles2),
-  Result = check_files(FilesInfo, []),
+  Result = check_files(FilesInfo, [], Config),
   {ok, Result}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,22 +42,24 @@ handle_pull_request(Cred, Data, GithubFiles) ->
 
 -spec check_files( [file_info()]
                  , [egithub_webhook:message()]
+                 , spellingci_config:config()
                  ) -> [egithub_webhook:message()].
-check_files([], Comments) ->
+check_files([], Comments, _Config) ->
   lists:flatten(Comments);
 check_files([#{ content := Content
               , path := Path
               , commit_id := Commit
               , patch := Patch
-              } | Rest], Comments) ->
-  Comments2 = case sheldon:check(Content) of
+              } | Rest], Comments, Config) ->
+  SheldonConfig = spellingci_config:sheldon_config(Config),
+  Comments2 = case sheldon:check(Content, SheldonConfig) of
     ok ->
       Comments;
     #{misspelled_words := MisspelledWords} ->
       C = create_comments(Commit, Path, MisspelledWords, Patch),
       [C | Comments]
   end,
-  check_files(Rest, Comments2).
+  check_files(Rest, Comments2, Config).
 
 -spec create_comments( string()
                      , string()
@@ -108,14 +114,15 @@ create_text([MisspelledWord | Rest], Text) ->
   Word = ["- ", MisspelledWord, "\n"],
   create_text(Rest, Text ++ Word).
 
--spec filter_files([egithub_webhook:file()]) -> [egithub_webhook:file()].
-filter_files(GithubFiles) ->
-  Extensions = get_extensions_to_check(),
+-spec filter_files([egithub_webhook:file()], spellingci_config:config()) ->
+  [egithub_webhook:file()].
+filter_files(GithubFiles, Config) ->
+  Extensions = spellingci_config:extensions(Config),
   filter_files(GithubFiles, Extensions, []).
 
 filter_files([], _Extensions, GithubFiles) ->
   GithubFiles;
-filter_files( [#{ <<"filename">> := FileName} = GithubFile | Rest]
+filter_files( [#{<<"filename">> := FileName} = GithubFile | Rest]
             , Extensions
             , GithubFiles) ->
   case check_extension(FileName, Extensions) of
@@ -137,19 +144,26 @@ file_info( Cred, Repo, #{ <<"filename">> := Filename
    , patch => Patch
    }.
 
--spec get_extensions_to_check() -> [string()].
-get_extensions_to_check() ->
-  ["md", "markdown"].
-
 -spec check_extension(binary(), [string()]) -> boolean().
 check_extension(_FileName, []) ->
   false;
 check_extension(FileName, [Extension | Rest]) ->
   Result = re:split(FileName, "[.]"),
-  ExtBinary = list_to_binary(Extension),
   case lists:nth(length(Result), Result) of
-    ExtBinary -> true;
+    Extension -> true;
     _         -> check_extension(FileName, Rest)
+  end.
+
+-spec get_config(egithub:credentials(), string(), string()) ->
+  spellinci_config:config().
+get_config(Cred, Repo, Branch) ->
+  case egithub:file_content(Cred, Repo, Branch, "spellingci.json") of
+    {ok, ConfigContent} ->
+      ct:print("~p~n", [ConfigContent]),
+      Config = jiffy:decode(ConfigContent, [return_maps]),
+      spellingci_config:normalize(Config);
+    {error, _} ->
+      spellingci_config:default()
   end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -261,14 +261,17 @@ add_webhook(_Config) ->
 -spec webhook(config()) -> ok.
 webhook(_Config) ->
   _User1 = create_user(1),
-  Data = #{<<"repository">> =>
-            #{ <<"id">>        => 1
-             , <<"name">>      => <<"name1">>
-             , <<"html_url">>  => <<"http://url1">>
-             , <<"private">>   => false
-             , <<"full_name">> => <<"fullname/1">>
-             , <<"owner">>     => #{<<"id">> => 1}
-             }},
+  Data = #{ <<"repository">> =>
+              #{ <<"id">>        => 1
+               , <<"name">>      => <<"name1">>
+               , <<"html_url">>  => <<"http://url1">>
+               , <<"private">>   => false
+               , <<"full_name">> => <<"fullname/1">>
+               , <<"owner">>     => #{<<"id">> => 1}
+               }
+          , <<"pull_request">> =>
+                      #{<<"head">> => #{<<"ref">> => <<"branch">>}}
+          },
   Cred = {basic, "user", "password"},
   GithubFile = #{ <<"filename">> => <<"file1.md">>
                 , <<"raw_url">>  =>
@@ -282,8 +285,8 @@ webhook(_Config) ->
                     "64cb5743567e5df8ed7c05144af5bf1139edfad5/file1.txt">>
                 , <<"patch">>    => <<"@@ -1,5 +1,5 @@\n Line\n">>
                 },
-  _ = meck:expect(egithub, file_content, fun(_, _, _, _) ->
-      {ok, "wrrong word"}
+  _ = meck:expect(egithub, file_content, fun(_, _, _, File) ->
+      file_content(File)
     end),
   _ = meck:expect(egithub_webhook, event, fun(_, _, _, _, _, _) ->
       ok
@@ -412,3 +415,9 @@ mock_valid_session(Session) ->
       {true, Session}
     end),
   ok.
+
+-spec file_content(iolist()) -> term().
+file_content("spellingci.json") ->
+  {error, no_config};
+file_content(_) ->
+  {ok, "wrrong word"}.
