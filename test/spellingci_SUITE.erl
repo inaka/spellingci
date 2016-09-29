@@ -270,7 +270,13 @@ webhook(_Config) ->
              , <<"owner">>     => #{<<"id">> => 1}
              }},
   Cred = {basic, "user", "password"},
-  GithubFile = #{ <<"filename">> => <<"file1.txt">>
+  GithubFile = #{ <<"filename">> => <<"file1.md">>
+                , <<"raw_url">>  =>
+                  <<"https://github.com/user/spell5/raw/",
+                    "64cb5743567e5df8ed7c05144af5bf1139edfad5/file1.md">>
+                , <<"patch">>    => <<"@@ -1,5 +1,5 @@\n Line\n">>
+                },
+  GithubFile2 = #{ <<"filename">> => <<"file1.txt">>
                 , <<"raw_url">>  =>
                   <<"https://github.com/user/spell5/raw/",
                     "64cb5743567e5df8ed7c05144af5bf1139edfad5/file1.txt">>
@@ -284,7 +290,9 @@ webhook(_Config) ->
     end),
 
   {ok, [_Comment]} =
-    spellingci_webhook:handle_pull_request(Cred, Data, [GithubFile]),
+    spellingci_webhook:handle_pull_request(Cred, Data, [ GithubFile
+                                                       , GithubFile2
+                                                       ]),
 
   % thru cowboy
   Headers = [{<<"content-type">>, <<"application/json">>}],

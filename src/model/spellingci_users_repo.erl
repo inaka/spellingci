@@ -22,7 +22,7 @@ create(Id, Username, Name, GitHubToken) ->
 
 -spec find(spellingci_users:id()) -> spellingci_users:user() | not_found.
 find(Id) ->
-  case sumo:find(github_users, Id) of
+  case sumo:fetch(github_users, Id) of
     notfound -> not_found;
     User     -> User
   end.

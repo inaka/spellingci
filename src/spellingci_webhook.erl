@@ -7,7 +7,7 @@
 
 % types
 -type file_info() :: #{ content   := binary()
-                      , path      := [byte()]
+                      , path      := string()
                       , commit_id := string()
                       , patch     := binary()
                       }.
@@ -26,8 +26,9 @@ handle_pull_request(Cred, Data, GithubFiles) ->
   #{<<"repository">> := GithubRepo} = Data,
   Repo = spellingci_repos:from_github(GithubRepo),
   RepoFullName = binary_to_list(spellingci_repos:full_name(Repo)),
+  GithubFiles2 = filter_files(GithubFiles),
   FileInfoFun = fun (File) -> file_info(Cred, RepoFullName, File) end,
-  FilesInfo = lists:map(FileInfoFun, GithubFiles),
+  FilesInfo = lists:map(FileInfoFun, GithubFiles2),
   Result = check_files(FilesInfo, []),
   {ok, Result}.
 
@@ -35,8 +36,9 @@ handle_pull_request(Cred, Data, GithubFiles) ->
 %%% Internal functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec check_files([file_info()], [egithub_webhook:message()]) ->
-  [egithub_webhook:message()].
+-spec check_files( [file_info()]
+                 , [egithub_webhook:message()]
+                 ) -> [egithub_webhook:message()].
 check_files([], Comments) ->
   lists:flatten(Comments);
 check_files([#{ content := Content
@@ -54,7 +56,7 @@ check_files([#{ content := Content
   check_files(Rest, Comments2).
 
 -spec create_comments( string()
-                     , [byte()]
+                     , string()
                      , [sheldon_result:misspelled_word()]
                      , binary()) -> list().
 create_comments(Commit, Path, MisspelledWords, Patch) ->
@@ -62,7 +64,7 @@ create_comments(Commit, Path, MisspelledWords, Patch) ->
   [create_comment(Commit, Path, Line, create_text(Words), Patch)
     || {Line, Words} <- WordsPerLine].
 
--spec create_comment(string(), [byte()], pos_integer(), binary(), binary()) ->
+-spec create_comment(string(), string(), pos_integer(), binary(), binary()) ->
   list().
 create_comment(Commit, Path, Line, Text, Patch) ->
   case relative_position(Patch, Line) of
@@ -88,9 +90,15 @@ get_words_per_line(MisspelledWords) ->
 
 -spec create_text([sheldon_result:misspelled_word()]) -> binary().
 create_text(MisspelledWords) ->
+  Word = case length(MisspelledWords) of
+    1 -> "word";
+    _ -> "words"
+  end,
   create_text(MisspelledWords, [ "I found "
                                , integer_to_list(length(MisspelledWords))
-                               , " misspelled word in this sentence: \n"
+                               , " misspelled "
+                               , Word
+                               , " in this sentence: \n"
                                ]).
 
 -spec create_text([sheldon_result:misspelled_word()], iodata()) -> binary().
@@ -99,6 +107,21 @@ create_text([], Text) ->
 create_text([MisspelledWord | Rest], Text) ->
   Word = ["- ", MisspelledWord, "\n"],
   create_text(Rest, Text ++ Word).
+
+-spec filter_files([egithub_webhook:file()]) -> [egithub_webhook:file()].
+filter_files(GithubFiles) ->
+  Extensions = get_extensions_to_check(),
+  filter_files(GithubFiles, Extensions, []).
+
+filter_files([], _Extensions, GithubFiles) ->
+  GithubFiles;
+filter_files( [#{ <<"filename">> := FileName} = GithubFile | Rest]
+            , Extensions
+            , GithubFiles) ->
+  case check_extension(FileName, Extensions) of
+    true  -> filter_files(Rest, Extensions, [GithubFile | GithubFiles]);
+    false -> filter_files(Rest, Extensions, GithubFiles)
+  end.
 
 -spec file_info(egithub:credentials(), string(), egithub_webhook:file()) ->
   file_info().
@@ -113,6 +136,21 @@ file_info( Cred, Repo, #{ <<"filename">> := Filename
    , commit_id => CommitId
    , patch => Patch
    }.
+
+-spec get_extensions_to_check() -> [string()].
+get_extensions_to_check() ->
+  ["md", "markdown"].
+
+-spec check_extension(binary(), [string()]) -> boolean().
+check_extension(_FileName, []) ->
+  false;
+check_extension(FileName, [Extension | Rest]) ->
+  Result = re:split(FileName, "[.]"),
+  ExtBinary = list_to_binary(Extension),
+  case lists:nth(length(Result), Result) of
+    ExtBinary -> true;
+    _         -> check_extension(FileName, Rest)
+  end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Github functions

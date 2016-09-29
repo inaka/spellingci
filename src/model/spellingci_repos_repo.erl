@@ -14,7 +14,7 @@
 
 -spec find(spellingci_repos:id()) -> spellingci_repos:repo() | not_found.
 find(Id) ->
-  case sumo:find(github_repos, Id) of
+  case sumo:fetch(github_repos, Id) of
     notfound -> not_found;
     User     -> User
   end.
