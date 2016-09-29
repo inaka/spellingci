@@ -25,7 +25,7 @@ RUN mkdir /myapp
 WORKDIR /myapp
 COPY . /myapp
 
-RUN rebar3 release
+RUN rebar3 release -n spellingci
 COPY build/sys.config _build/default/rel/spellingci/releases/0.0.1/sys.config
 COPY build/vm.args _build/default/rel/spellingci/releases/0.0.1/vm.args
 COPY build/spellingci.monit.conf /etc/monit/conf.d/spellingci.conf

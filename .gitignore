@@ -14,3 +14,5 @@ _build/
 doc/
 log/
 compile_commands.json
+app.config
+store/
