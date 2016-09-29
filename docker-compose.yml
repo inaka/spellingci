@@ -11,7 +11,6 @@ services:
     networks:
       app_net:
         ipv4_address: 172.4.0.24
-      default:
 
 networks:
   app_net:
