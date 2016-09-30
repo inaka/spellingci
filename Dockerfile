@@ -19,6 +19,7 @@ RUN apt-get clean &&\
 
 COPY build/esl-erlang_19.0.3-1-debian-jessie_amd64.deb /root/.
 RUN dpkg -i /root/esl-erlang_19.0.3-1-debian-jessie_amd64.deb
+RUN echo 'delete me'
 COPY build/rebar3 /usr/local/bin/.
 COPY build/covertool /usr/local/bin/.
 
