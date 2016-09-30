@@ -20,6 +20,7 @@ RUN apt-get clean &&\
 COPY build/esl-erlang_19.0.3-1-debian-jessie_amd64.deb /root/.
 RUN dpkg -i /root/esl-erlang_19.0.3-1-debian-jessie_amd64.deb
 COPY build/rebar3 /usr/local/bin/.
+COPY build/covertool /usr/local/bin/.
 
 RUN mkdir /myapp
 WORKDIR /myapp
