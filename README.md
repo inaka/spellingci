@@ -48,7 +48,9 @@ Users should check the repositories they want to be webhooked by `Spelling CI`. 
 
 # Example
 we have a repository linked to our Spelling CI webhook. Those are the files:
+
 ![Alt text](/assets/img/files.png?raw=true "Files")
+
 The names are self explanatory :)
 
 Lets try to do a Pull Request
