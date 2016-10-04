@@ -9,6 +9,7 @@ RUN echo \
 ENV DEPENDENCY_PACKAGES=""
 ENV BUILD_PACKAGES="build-essential libwxbase3.0-0 libwxgtk3.0-0 libncurses5-dev openssl libssl-dev fop wget git vim mysql-client monit"
 RUN echo 'test'
+RUN echo 'test2'
 RUN apt-get clean &&\
     apt-get -y update && \
     apt-get -y dist-upgrade && \
