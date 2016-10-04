@@ -23,9 +23,11 @@ And you can check all of our open-source projects at [inaka.github.io](http://in
 You can use this source code in order to deploy your own `Spelling CI Server`, remember if you decide to deploy your own you must create the file `config/app.config` following the structure described on `config/app.config.template`.
 
 The landing page looks like:
+
 ![Alt text](/assets/img/landing.png?raw=true "Landing Page")
 
 User must log in using Github credentials, after that user will be redirected to a list with his/her public repositories.
+
 ![Alt text](/assets/img/list.png?raw=true "Repositories List")
 
 `Spelling CI` stores your list of repositories in mnesia backend. If your recent repositories doesn't appear on the list you should click the "Sync" button in order to synchronize with github again.
@@ -50,7 +52,9 @@ we have a repository linked to our Spelling CI webhook. Those are the files:
 The names are self explanatory :)
 
 Lets try to do a Pull Request
+
 ![Alt text](/assets/img/pr1.png?raw=true "Pull Request 1")
+
 Only `*.md` and `*.markdown` are checked, makes sense. But what if we want to check different extensions or even ignore the `*.md`? `SpellingCI` allow us to configure our settings through `spellingci.json` file. Lets take a look with a simple `spellingci.json`.
 ```
 {
@@ -58,8 +62,11 @@ Only `*.md` and `*.markdown` are checked, makes sense. But what if we want to ch
 }
 ```
 Adding the `spellingci.json` file and push again.
+
 ![Alt text](/assets/img/pr2.png?raw=true "Pull Request 2")
+
 `Spelling CI` is checking txt files now and it is not happy...
+
 ![Alt text](/assets/img/fail.png?raw=true "I am not happy")
 
 Now the committer should make `Spelling CI` happy if he/she wants the contribution to be merged. In order to make it happy you should update your misspelled words and/or update the `spellingci.json` file, by updating it I don't mean using this config file...
@@ -71,4 +78,5 @@ Now the committer should make `Spelling CI` happy if he/she wants the contributi
 ```
 
 I mean to add some `ignore_words` or `ignore_blocks`, that depends your case. But finally we will achieve it!
+
 ![Alt text](/assets/img/passok.png?raw=true "I am happy now!!")
