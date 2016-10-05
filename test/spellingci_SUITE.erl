@@ -89,6 +89,11 @@ auth_cookie(_Config) ->
   {ok, 302, RespHeaders, _} = api_call("/oauth/callback?code=12345"),
   true = has_cookie(RespHeaders),
 
+  [{<<"token">>, [{<<"token">>, Token}, _, _]}] = hackney:cookies(RespHeaders),
+
+  Headers = [{<<"Cookie">>, <<"token=", Token/binary>>}],
+  {ok, 204, _, _} = api_call(delete, "/logout", Headers),
+
   % test coverage
   {ok, 302, RespHeaders2, _} = api_call("/oauth/callback?code=4321"),
   true = has_cookie(RespHeaders2),
