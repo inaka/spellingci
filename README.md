@@ -1,8 +1,8 @@
 
 # Spelling CI
-Spelling CI Server is an application for checking the spelling of the Pull Requests and it is built on top of [sheldon](https://github.com/inaka/sheldon). `Spelling CI` provides:
+Spelling CI Server is an application for checking the spelling of Pull Requests and it is built on top of [sheldon](https://github.com/inaka/sheldon). `Spelling CI` provides:
 
-- Check the spelling of the Pull Requests through configuration file
+- A way to check the spelling of Pull Requests with the option of configuring it using a configuration file
 - Web interface built in 'Angular JS' where users can manage their repositories (Adding and removing the webhook)
 
 You can create your own server or use the one managed by [Inaka](http://www.inaka.net) at [Spellingci](http://spellingci.inakalabs.com/).
@@ -35,7 +35,7 @@ User must log in using Github credentials, after that user will be redirected to
 Users should check the repositories they want to be webhooked by `Spelling CI`. Once it is checked, every time the repository receive a Pull Request `Spelling CI` will check the spelling regarding the configuration, (if no configuration file is found `Spelling CI` will check only `*.md` and `*.markdown` files by default).
 
 # spellingci.json
-`Spelling CI` allow us to configure our settings through a json file. this is the format:
+`Spelling CI` allow us to configure your settings through a json file. this is the format:
 ```
 {
   "extensions" : ["txt", "other"],
