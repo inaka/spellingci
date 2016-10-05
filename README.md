@@ -39,7 +39,7 @@ Users should check the repositories they want to be webhooked by `Spelling CI`. 
 ```
 {
   "extensions" : ["txt", "other"],
-  "ignore_words" : ["word1", "word2],
+  "ignore_words" : ["word1", "word2"],
   "ignore_patterns" : ["regex1", "regex2"],
   "ignore_blocks" : [{"open" : "open_regex", "close" : "close_regex"}]
 }

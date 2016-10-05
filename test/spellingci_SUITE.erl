@@ -14,6 +14,7 @@
         , clean_sessions/1
         , add_webhook/1
         , webhook/1
+        , normalize_json/1
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -31,6 +32,7 @@ all() ->  [ connect
           , clean_sessions
           , add_webhook
           , webhook
+          , normalize_json
           ].
 
 -spec init_per_suite(config()) -> config().
@@ -305,6 +307,24 @@ webhook(_Config) ->
 
   _ = meck:unload(),
   clean_database().
+
+-spec normalize_json(config()) -> ok.
+normalize_json(_Config) ->
+  {ok, ConfigContent} =
+    file:read_file([code:priv_dir(spellingci), "/../test/files/sample1.json"]),
+  Config = jiffy:decode(ConfigContent, [return_maps]),
+  NormalizedConfig = spellingci_config:normalize(Config),
+  [<<"txt">>, <<"other">>] = spellingci_config:extensions(NormalizedConfig),
+  {ok, ConfigContent2} =
+    file:read_file([code:priv_dir(spellingci), "/../test/files/sample2.json"]),
+  Config2 = jiffy:decode(ConfigContent2, [return_maps]),
+  NormalizedConfig2 = spellingci_config:normalize(Config2),
+  #{ lang := eng
+   , ignore_words := ["word1", "word2"]
+   , ignore_blocks := [#{close := <<"close_regex">>, open := <<"open_regex">>}]
+   , ignore_patterns := [<<"regex1">>, <<"regex2">>]
+   } = spellingci_config:sheldon_config(NormalizedConfig2),
+  ok.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Internal Functions

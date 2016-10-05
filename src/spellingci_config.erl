@@ -49,7 +49,18 @@ normalize_extensions(Config) ->
 
 -spec normalize_sheldon_config(map()) -> sheldon_config:config().
 normalize_sheldon_config(Config) ->
-  SheldonConfig = maps:get(sheldon_config, Config, sheldon_config:default()),
+  IgnoreWords = maps:get(<<"ignore_words">>, Config, []),
+  IgnoreBlocks = maps:get(<<"ignore_blocks">>, Config, []),
+  NormalizeBlocksFun = fun(#{<<"open">> := Open, <<"close">> := Close}) ->
+    #{open => Open, close => Close}
+  end,
+  SheldonConfig = #{ ignore_words    =>
+                       lists:map(fun binary_to_list/1, IgnoreWords)
+                   , ignore_patterns =>
+                       maps:get(<<"ignore_patterns">>, Config, [])
+                   , ignore_blocks   =>
+                       lists:map(NormalizeBlocksFun, IgnoreBlocks)
+                   },
   sheldon_config:normalize(SheldonConfig).
 
 -spec default_extensions() -> [binary()].
