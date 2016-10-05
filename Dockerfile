@@ -20,6 +20,7 @@ RUN apt-get clean &&\
 COPY build/esl-erlang_19.0.3-1-debian-jessie_amd64.deb /root/.
 RUN dpkg -i /root/esl-erlang_19.0.3-1-debian-jessie_amd64.deb
 COPY build/rebar3 /usr/local/bin/.
+COPY build/covertool /usr/local/bin/.
 
 RUN mkdir /myapp
 WORKDIR /myapp
@@ -30,3 +31,4 @@ RUN rebar3 release -n spellingci
 
 COPY build/vm.args _build/default/rel/spellingci/releases/0.0.1/vm.args
 COPY build/spellingci.monit.conf /etc/monit/conf.d/spellingci.conf
+COPY build/monitrc /etc/monit/monitrc
