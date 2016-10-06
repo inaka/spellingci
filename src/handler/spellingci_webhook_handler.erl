@@ -95,13 +95,8 @@ common_handler(RepoState, Req, #{user := User} = State) ->
     RepoDecoded = sr_json:decode(Body),
     {ok, Repo} = spellingci_repos:from_json(RepoDecoded),
     FullName = spellingci_repos:full_name(Repo),
-    case webhook_action(RepoState, FullName, User) of
-      ok ->
-        {ok, {true, Req2, State}};
-      {error, private_repo} ->
-        _ = lager:error("Only public repos are allowed"),
-        {error, {403, Req2, State}}
-    end
+    ok = webhook_action(RepoState, FullName, User),
+    {ok, {true, Req2, State}}
   catch
     _:badjson -> {error, {400, Req, State}}
   end.
@@ -109,7 +104,7 @@ common_handler(RepoState, Req, #{user := User} = State) ->
 -spec webhook_action( spellingci_repos:status()
                     , spellingci_repos:name()
                     , spellingci_users:user()
-                    ) -> ok | {error, private_repo}.
+                    ) -> ok.
 webhook_action(on, FullName, User) ->
   spellingci_github_utils:webhook_on(FullName, User);
 webhook_action(off, FullName, User) ->

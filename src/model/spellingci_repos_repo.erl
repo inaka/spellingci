@@ -64,19 +64,31 @@ from_github(User) ->
   Token = spellingci_users:github_token(User),
   Cred = egithub:oauth(Token),
   Opts = #{type => <<"owner">>},
-  {ok, GithubRepos} = egithub:repos(Cred, Opts),
+  {ok, GitUserRepos} = egithub:repos(Cred, Opts),
   Now = calendar:universal_time(),
   User2 = spellingci_users:synced_at(User, Now),
   User2 = spellingci_users_repo:update(User2),
+  {ok, Orgs} = egithub:orgs(Cred),
+  Fun = fun(#{<<"login">> := OrgName}, Acc) ->
+    case spellingci_github_utils:is_admin(Cred, OrgName) of
+      true ->
+        {ok, GitOrgRepos} = egithub:all_org_repos(Cred, OrgName, Opts),
+        [GitOrgRepos | Acc];
+      false ->
+        Acc
+    end
+  end,
+  AllGitRepos = lists:foldl(Fun, GitUserRepos, Orgs),
+  AllGitRepos2 = lists:flatten(AllGitRepos),
   ok = delete_by_user(User),
-  [create_from_github(User, GR) || GR <- GithubRepos].
+  [create_from_github(User, GR) || GR <- AllGitRepos2].
 
 -spec create_from_github(spellingci_users:user(), map()) ->
   spellingci_repos:repo().
 create_from_github(User, GithubRepo) ->
   Repo = spellingci_repos:from_github(GithubRepo),
   Id = spellingci_repos:id(Repo),
-  UserId = spellingci_repos:user_id(Repo),
+  UserId = spellingci_users:id(User),
   Name = spellingci_repos:name(Repo),
   FullName = spellingci_repos:full_name(Repo),
   Url = spellingci_repos:url(Repo),
