@@ -1,0 +1,31 @@
+<h4>Introduction</h4>
+<p>Spelling CI is a service created by Inaka that will integrate with your Github repositories and check the spelling of your Pull Requests.</p>
+<h4>Usage</h4>
+<p>Once you've signed up with your Github user, you'll see a table with a row per repo. To [de]activate Spelling CI for a repo, just select its checkbox button.</p>
+<p>When Spelling CI is activated for a repo, a webhook will be added to that particular repository on Github. Then, each time somebody submits a pull request there, Spelling CI will check spelling of the PR's code and report any warnings as github comments.</p>
+<h4>Configuration</h4>
+<p>By default Spelling CI will check all the *.md and *.markdown files in your repository, but that can be changed using a spellingci.json file with this format:</p>
+
+<pre><code>{
+  "extensions" : ["txt", "other"],
+  "ignore_words" : ["word1", "word2"],
+  "ignore_patterns" : ["regex1", "regex2"],
+  "ignore_blocks" : [{"open" : "open_regex", "close" : "close_regex"}]
+}</code></pre>
+<p>You can find more info about this configuration file <a target="_blank" href="https://github.com/inaka/spellingci">here</a>.
+<h4>Scope</h4>
+<p>Spelling CI will check public and private repositories hosted on Github. Spelling CI's code is <a target="_blank" href="https://github.com/inaka/spellingci">open-source</a> and it is using many open-source libraries like:</p>
+<dl>
+  <dt><a target="_blank" href="https://github.com/inaka/sheldon">Sheldon</a></dt>
+    <dd>Spelling checker library</dd>
+  <dt><a target="_blank" href="https://github.com/inaka/erlang-github">Erlang Github</a></dt>
+    <dd>Used to integrate with Github</dd>
+  <dt><a target="_blank" href="https://github.com/ninenines/cowboy">Cowboy</a></dt>
+    <dd>As the web server that provides both the site and the API to integrate with Github</dd>
+  <dt><a target="_blank" href="https://rebar3.org">Rebar3</a></dt>
+    <dd>To be able to compile rebar based projects</dd>
+  <dt><a target="_blank" href="https://github.com/inaka/sumo_db">Sumo DB</a></dt>
+    <dd>Used for persistency (Gadget keeps track of subscriptions) with a Mnesia backend</dd>
+  <dt><a target="_blank" href="https://github.com/inaka/sumo_rest">Sumo REST</a></dt>
+    <dd>Used to create the REST API</dd>
+</dl>
