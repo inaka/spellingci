@@ -11,6 +11,9 @@ angular.module('spellingCI').config(['$routeProvider',
         controller: 'ReposController',
         controllerAs: 'repoCtrl'
       }).
+      when('/about', {
+        templateUrl: 'assets/templates/about.html'
+      }).
       otherwise({
         redirectTo: '/'
     });

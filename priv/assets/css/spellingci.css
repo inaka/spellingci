@@ -4,6 +4,10 @@
   height: 80px;
 }
 
+#header a {
+  cursor: pointer;
+}
+
 .navbar-brand {
   font-size: 35px;
   color: #000000;
@@ -15,12 +19,9 @@
   overflow-y: scroll;
 }
 
-.container.row.buttons {
-  padding-bottom: 110px;
-}
-
 .container.main {
   padding-top: 95px;
+  padding-bottom: 110px;
 }
 
 #footer {
