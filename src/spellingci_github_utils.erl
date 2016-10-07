@@ -4,7 +4,7 @@
 -export([ already_hooked/2
         , webhook_on/2
         , webhook_off/2
-        , is_admin/2
+        , is_admin/1
         ]).
 
 
@@ -51,13 +51,11 @@ webhook_off(RepoFullName, User) ->
   Status = off,
   webhook_common(Status, RepoFullName, User).
 
--spec is_admin(egithub:credentials(), term()) -> boolean().
-is_admin(Cred, OrgName) ->
-  {ok, #{<<"state">> := State,
-         <<"role">> := Type}} =
-    egithub:org_membership(Cred, OrgName),
-
-  <<"admin">> == Type andalso <<"active">> == State.
+-spec is_admin(map()) -> boolean().
+is_admin(#{<<"permissions">> := #{<<"admin">> := true}}) ->
+  true;
+is_admin(_Repo) ->
+  false.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Internal Functions

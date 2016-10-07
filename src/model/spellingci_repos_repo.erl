@@ -70,13 +70,10 @@ from_github(User) ->
   User2 = spellingci_users_repo:update(User2),
   {ok, Orgs} = egithub:orgs(Cred),
   Fun = fun(#{<<"login">> := OrgName}, Acc) ->
-    case spellingci_github_utils:is_admin(Cred, OrgName) of
-      true ->
-        {ok, GitOrgRepos} = egithub:all_org_repos(Cred, OrgName, Opts),
-        [GitOrgRepos | Acc];
-      false ->
-        Acc
-    end
+    {ok, GitOrgRepos} = egithub:all_org_repos(Cred, OrgName, Opts),
+    AdminOrgRepos =
+      lists:filter(fun spellingci_github_utils:is_admin/1, GitOrgRepos),
+    [AdminOrgRepos | Acc]
   end,
   AllGitRepos = lists:foldl(Fun, GitUserRepos, Orgs),
   AllGitRepos2 = lists:flatten(AllGitRepos),
