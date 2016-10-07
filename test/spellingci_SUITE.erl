@@ -118,6 +118,7 @@ list_repos(_Config) ->
 
   ok = mock_egithub_oauth(),
   ok = mock_egithub_repos([]),
+  ok = mock_egithub_orgs(),
   [] = spellingci_repos_repo:repos(User1),
   [] = spellingci_repos_repo:repos(User2),
   Repo1 = create_repo(1, 1),
@@ -161,6 +162,7 @@ sync_repos(_Config) ->
   User1 = create_user(1),
   ok = mock_egithub_oauth(),
   ok = mock_egithub_repos([]),
+  ok = mock_egithub_orgs(),
   [] = spellingci_repos_repo:repos(User1),
   UserSync = spellingci_users_repo:find(1),
   ok = mock_egithub_repos([#{ <<"id">>        => 1
@@ -438,6 +440,13 @@ mock_egithub_repos(Repos) ->
 mock_valid_session(Session) ->
   ok = meck:expect(spellingci_sessions_repo, valid_session, fun(_) ->
       {true, Session}
+    end),
+  ok.
+
+-spec mock_egithub_orgs() -> ok.
+mock_egithub_orgs() ->
+  ok = meck:expect(egithub, orgs, fun(_) ->
+      {ok, []}
     end),
   ok.
 
