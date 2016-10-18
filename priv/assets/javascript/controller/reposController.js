@@ -14,17 +14,20 @@ angular.module('spellingCI').controller('ReposController', ['$window', '$scope',
     }
 
     controller.updateWebhook = function(repo) {
-      if(repo.checked) {
+      repo.waiting = true;
+      if(repo.status == "off") {
         var repoToSend = angular.copy(repo);
         repoToSend.status = "on";
         Webhook.add(repoToSend).success(function(data) {
-
+          repo.status = "on";
+          repo.waiting = false;
         });
       } else {
         var repoToSend = angular.copy(repo);
         repoToSend.status = "off";
         Webhook.remove(repoToSend).success(function(data) {
-
+          repo.status = "off";
+          repo.waiting = false;
         });
       }
     }
