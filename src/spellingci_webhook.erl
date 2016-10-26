@@ -67,8 +67,8 @@ check_files([#{ content := Content
                      , binary()) -> list().
 create_comments(Commit, Path, MisspelledWords, Patch) ->
   WordsPerLine = get_words_per_line(MisspelledWords),
-  [create_comment(Commit, Path, Line, create_text(Words), Patch)
-    || {Line, Words} <- WordsPerLine].
+  [create_comment(Commit, Path, Line, create_text(MisspelledWords2), Patch)
+    || {Line, MisspelledWords2} <- WordsPerLine].
 
 -spec create_comment(string(), string(), pos_integer(), binary(), binary()) ->
   list().
@@ -88,7 +88,7 @@ create_comment(Commit, Path, Line, Text, Patch) ->
 -spec get_words_per_line([sheldon_result:misspelled_word()]) ->
   [words_per_line()].
 get_words_per_line(MisspelledWords) ->
-  LinesWords = [{L, W} || #{word := W, line_number := L} <- MisspelledWords],
+  LinesWords = [{L, W} || W = #{line_number := L} <- MisspelledWords],
   {Lines, _Words} = lists:unzip(LinesWords),
   UniqueLines = sets:to_list(sets:from_list(Lines)),
   F = fun(L, LW) -> [W || {L1, W} <- LW, L == L1] end,
@@ -111,8 +111,18 @@ create_text(MisspelledWords) ->
 create_text([], Text) ->
   list_to_binary(Text);
 create_text([MisspelledWord | Rest], Text) ->
-  Word = ["- ", MisspelledWord, "\n"],
-  create_text(Rest, Text ++ Word).
+  #{word := Word, candidates := Candidates} = MisspelledWord,
+  Comment = ["- ", Word, "\n"],
+  Comment2 = case Candidates of
+    [] ->
+      Comment;
+    Candidates ->
+      SuggestionList =
+        lists:flatten([[<<", ">>, WordSuggested] || WordSuggested <- Candidates]),
+      [<<", ">> | SuggestionList2] = SuggestionList,
+      [Comment, "\t- *Suggested Replacements:* ", SuggestionList2, "\n"]
+  end,
+  create_text(Rest, Text ++ Comment2).
 
 -spec filter_files([egithub_webhook:file()], spellingci_config:config()) ->
   [egithub_webhook:file()].
@@ -210,19 +220,22 @@ new_position(Line, {Local, Global}) ->
           {Local + 1, NewGlobal - 1};
       deletion ->
           {Local + 1, Global};
+      new_line ->
+          {Local + 1, Global};
       _ -> %% addition or same
           {Local + 1, Global + 1}
   end.
 
 %% @todo delete and refactor after inaka/erlang-github#122
--spec patch_line_type(binary()) -> patch | addition | deletion | same.
+-spec patch_line_type(binary()) ->
+  patch | addition | deletion | new_line | same.
 patch_line_type(Line) ->
   [Head | _] = unicode:characters_to_list(Line),
   case Head of
     $@  -> patch;
     $+  -> addition;
     $-  -> deletion;
-    $\\ -> same;
+    $\\ -> new_line;
     $   -> same %space
   end.
 
