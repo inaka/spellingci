@@ -279,7 +279,9 @@ webhook(_Config) ->
                , <<"owner">>     => #{<<"id">> => 1}
                }
           , <<"pull_request">> =>
-              #{<<"head">> => #{<<"ref">> => <<"branch">>}}
+              #{ <<"head">> => #{<<"ref">> => <<"branch">>}
+               , <<"user">> => #{<<"id">> => 1}
+               }
           },
   Cred = {basic, "user", "password"},
   GithubFile = #{ <<"filename">> => <<"file1.md">>
