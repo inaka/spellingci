@@ -61,10 +61,8 @@ terminate(_Reason, _Req, _State) ->
 process_request(#{body := Body} = Request) ->
   Mod = spellingci_webhook,
   Cred = commenter_credentials(),
-  #{<<"repository">> := GithubRepo} = jiffy:decode(Body, [return_maps]),
-  Repo = spellingci_repos:from_github(GithubRepo),
-  UserId = spellingci_repos:user_id(Repo),
-
+  #{<<"pull_request">> := #{<<"user">> := #{<<"id">> := UserId}}} =
+    jiffy:decode(Body, [return_maps]),
   case spellingci_users_repo:find(UserId) of
     not_found ->
       egithub_webhook:event(Mod, Cred, Request);
