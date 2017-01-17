@@ -48,8 +48,9 @@ handle(Req, State) ->
         {ok, Token} ->
           User = spellingci_users_repo:save_token(Token),
           UserId = spellingci_users:id(User),
+          UserName = spellingci_users:username(User),
           Session = spellingci_sessions_repo:create(UserId),
-          Url = "/#/repos",
+          Url = ["/#/repos/", UserName],
           RedirHeaders = [{<<"Location">>, Url}],
           Req3 = cowboy_req:set_resp_cookie( <<"token">>
                                            , spellingci_sessions:token(Session)

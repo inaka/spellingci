@@ -14,6 +14,14 @@
   font-weight: bold;
 }
 
+.logged-as {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
 .container.row.list {
   height: 100%;
   overflow-y: scroll;

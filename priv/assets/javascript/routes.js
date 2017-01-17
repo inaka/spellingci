@@ -6,7 +6,7 @@ angular.module('spellingCI').config(['$routeProvider',
         controller: 'LandingController',
         controllerAs: 'landingCtrl'
       }).
-      when('/repos', {
+      when('/repos/:user', {
         templateUrl: 'assets/templates/repos.html',
         controller: 'ReposController',
         controllerAs: 'repoCtrl'

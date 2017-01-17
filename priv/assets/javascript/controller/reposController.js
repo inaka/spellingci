@@ -1,6 +1,7 @@
-angular.module('spellingCI').controller('ReposController', ['$window', '$scope', 'Repo', 'Webhook',
-  function($window, $scope, Repo, Webhook){
+angular.module('spellingCI').controller('ReposController', ['$window', '$scope', 'Repo', 'Webhook', '$routeParams',
+  function($window, $scope, Repo, Webhook, $routeParams){
     var controller = this;
+    $scope.basecontroller.userLogged = $routeParams.user;
     controller.wait = true;
     controller.repos = [];
     getRepos();
