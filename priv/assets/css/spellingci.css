@@ -1,17 +1,27 @@
 #header {
   background-color: white;
   border-bottom: solid 1px  #E93F3F;
-  height: 80px;
+  height: 100px;
+  padding: 0px 25px;
 }
 
 #header a {
   cursor: pointer;
 }
-
+.navbar.options {
+  padding-top: 35px;
+}
 .navbar-brand {
-  font-size: 35px;
+  font-size: 45px;
+  padding-top: 35px;
+  padding-left: 75px;
   color: #000000;
   font-weight: bold;
+}
+
+.spellingci-logo {
+  position: fixed;
+  height:95px;
 }
 
 .logged-as {
@@ -28,7 +38,7 @@
 }
 
 .container.main {
-  padding-top: 95px;
+  padding-top: 105px;
   padding-bottom: 110px;
 }
 

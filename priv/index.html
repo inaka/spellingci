@@ -13,24 +13,22 @@
   <body role="contentinfo" ng-controller="BaseController as baseCtrl">
 
     <div id="header" class="navbar navbar-fixed-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="#">Spelling CI</a>
-        </div>
-        <div class="navbar">
-          <ul class="nav navbar-nav navbar-right">
-              <li><a class="navbar-btn" ng-show="baseCtrl.logged" ng-href="/#/repos/{{basecontroller.userLogged}}">Your Repos</a></li>
-              <li><a class="navbar-btn" href="/#/about">About Spelling CI</a></li>
-              <li ng-show="baseCtrl.logged">
-                <span class="logged-as" href="/#">Logged as <b>{{basecontroller.userLogged}}</b>,</span>
-              </li>
-              <li ng-show="baseCtrl.logged">
-                <a class="btn-default btn-small navbar-btn" ng-click="baseCtrl.logout()">
-                  <span class="glyphicon glyphicon-log-out"></span> Logout
-                </a>
-              </li>
-          </ul>
-        </div>
+      <div class="navbar-header">
+        <span><img class="spellingci-logo" src="assets/img/grammar-guy.png"/><a class="navbar-brand" href="#">Spelling CI</a></span>
+      </div>
+      <div class="navbar options">
+        <ul class="nav navbar-nav navbar-right">
+            <li><a class="navbar-btn" ng-show="baseCtrl.logged" ng-href="/#/repos/{{basecontroller.userLogged}}">Your Repos</a></li>
+            <li><a class="navbar-btn" href="/#/about">About Spelling CI</a></li>
+            <li ng-show="baseCtrl.logged">
+              <span class="logged-as" href="/#">Logged as <b>{{basecontroller.userLogged}}</b>,</span>
+            </li>
+            <li ng-show="baseCtrl.logged">
+              <a class="btn-default btn-small navbar-btn" ng-click="baseCtrl.logout()">
+                <span class="glyphicon glyphicon-log-out"></span> Logout
+              </a>
+            </li>
+        </ul>
       </div>
     </div>
 
