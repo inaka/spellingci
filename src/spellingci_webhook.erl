@@ -52,7 +52,8 @@ check_files([#{ content := Content
               , patch := Patch
               } | Rest], Comments, Config) ->
   SheldonConfig = spellingci_config:sheldon_config(Config),
-  Comments2 = case sheldon:check(Content, SheldonConfig) of
+  SheldonConfig2 = add_adapters(SheldonConfig, get_extension(Path)),
+  Comments2 = case sheldon:check(Content, SheldonConfig2) of
     ok ->
       Comments;
     #{misspelled_words := MisspelledWords} ->
@@ -154,15 +155,28 @@ file_info( Cred, Repo, #{ <<"filename">> := Filename
    , patch => Patch
    }.
 
--spec check_extension(binary(), [string()]) -> boolean().
+-spec check_extension(string(), [string()]) -> boolean().
 check_extension(_FileName, []) ->
   false;
 check_extension(FileName, [Extension | Rest]) ->
-  Result = re:split(FileName, "[.]"),
-  case lists:nth(length(Result), Result) of
+  case get_extension(FileName) of
     Extension -> true;
     _         -> check_extension(FileName, Rest)
   end.
+
+-spec get_extension(string()) -> binary().
+get_extension(FileName) ->
+  Result = re:split(FileName, "[.]"),
+  lists:nth(length(Result), Result).
+
+%% @Private Add adapters depending on the extensions
+-spec add_adapters(sheldon_config:config(), binary()) -> sheldon_config:config().
+add_adapters(SheldonConfig, <<"markdown">>) ->
+  SheldonConfig#{adapters => [markdown_adapter]};
+add_adapters(SheldonConfig, <<"md">>) ->
+  SheldonConfig#{adapters => [markdown_adapter]};
+add_adapters(SheldonConfig, _) ->
+  SheldonConfig.
 
 -spec get_config(egithub:credentials(), string(), string()) ->
   spellinci_config:config().

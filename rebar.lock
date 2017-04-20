@@ -4,6 +4,7 @@
  {<<"cowboy_swagger">>,{pkg,<<"cowboy_swagger">>,<<"1.1.0">>},1},
  {<<"cowlib">>,{pkg,<<"cowlib">>,<<"1.0.2">>},2},
  {<<"egithub">>,{pkg,<<"egithub">>,<<"0.2.8">>},0},
+ {<<"emarkdown">>,{pkg,<<"emarkdown">>,<<"0.1.0">>},1},
  {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.8">>},1},
  {<<"hackney">>,{pkg,<<"hackney">>,<<"1.6.1">>},0},
  {<<"idna">>,{pkg,<<"idna">>,<<"1.2.0">>},1},
@@ -14,8 +15,8 @@
  {<<"mimerl">>,{pkg,<<"mimerl">>,<<"1.0.2">>},1},
  {<<"mixer">>,{pkg,<<"inaka_mixer">>,<<"0.1.5">>},0},
  {<<"quickrand">>,{pkg,<<"quickrand">>,<<"1.5.4">>},1},
- {<<"ranch">>,{pkg,<<"ranch">>,<<"1.2.1">>},2},
- {<<"sheldon">>,{pkg,<<"sheldon">>,<<"0.1.1">>},0},
+ {<<"ranch">>,{pkg,<<"ranch">>,<<"1.3.2">>},2},
+ {<<"sheldon">>,{pkg,<<"sheldon">>,<<"0.1.3">>},0},
  {<<"ssl_verify_fun">>,{pkg,<<"ssl_verify_fun">>,<<"1.1.0">>},1},
  {<<"sumo_db">>,{pkg,<<"sumo_db">>,<<"0.6.4">>},0},
  {<<"sumo_rest">>,
@@ -24,7 +25,7 @@
   0},
  {<<"trails">>,{pkg,<<"trails">>,<<"0.2.0">>},1},
  {<<"uuid">>,{pkg,<<"uuid_erl">>,<<"1.5.2">>},0},
- {<<"worker_pool">>,{pkg,<<"worker_pool">>,<<"2.0.1">>},1}]}.
+ {<<"worker_pool">>,{pkg,<<"worker_pool">>,<<"2.2.3">>},1}]}.
 [
 {pkg_hash,[
  {<<"certifi">>, <<"A7966EFB868B179023618D29A407548F70C52466BF1849B9E8EBD0E34B7EA11F">>},
@@ -32,6 +33,7 @@
  {<<"cowboy_swagger">>, <<"D1141F847B2313D9959383D241294FF786948C66E97086CBE9C0B877FB06A601">>},
  {<<"cowlib">>, <<"9D769A1D062C9C3AC753096F868CA121E2730B9A377DE23DEC0F7E08B1DF84EE">>},
  {<<"egithub">>, <<"15CBCA21E2ADB159FF28988F07F5736264CEAA8D55EA7C8F296A32ECA3D42827">>},
+ {<<"emarkdown">>, <<"F1310FB8EE1A488CB2E16AA4E13CB34A7B68B310222CC47BB817B52242D7337C">>},
  {<<"goldrush">>, <<"2024BA375CEEA47E27EA70E14D2C483B2D8610101B4E852EF7F89163CDB6E649">>},
  {<<"hackney">>, <<"DDD22D42DB2B50E6A155439C8811B8F6DF61A4395DE10509714AD2751C6DA817">>},
  {<<"idna">>, <<"AC62EE99DA068F43C50DC69ACF700E03A62A348360126260E87F2B54ECED86B2">>},
@@ -42,11 +44,11 @@
  {<<"mimerl">>, <<"993F9B0E084083405ED8252B99460C4F0563E41729AB42D9074FD5E52439BE88">>},
  {<<"mixer">>, <<"754630C0E60221B23E4D83ADF6E789A8B283855E23F9391EEC40980E6E800486">>},
  {<<"quickrand">>, <<"47ADD4755CC5F209CBEFFD6F47C84061196CD7FAD99FD8FD12418EB0D06B939D">>},
- {<<"ranch">>, <<"A6FB992C10F2187B46FFD17CE398DDF8A54F691B81768F9EF5F461EA7E28C762">>},
- {<<"sheldon">>, <<"1610CC49F1ABC9A55AD632467490D23B786A2AD58E37F9AC8592B3B1E5AA2B03">>},
+ {<<"ranch">>, <<"E4965A144DC9FBE70E5C077C65E73C57165416A901BD02EA899CFD95AA890986">>},
+ {<<"sheldon">>, <<"9C68327A9297C73077D490F7268F8D2704C8CBB17EE0B8272C5615F895E4E5B1">>},
  {<<"ssl_verify_fun">>, <<"EDEE20847C42E379BF91261DB474FFBE373F8ACB56E9079ACB6038D4E0BF414F">>},
  {<<"sumo_db">>, <<"BA655B9E83FDB6C46766EEBF0F01277ED1FA0CC642A6049862097ADD8AFE0080">>},
  {<<"trails">>, <<"8A26C8F32B2A4D317830FAF55F034CC532D849547686806B83063AA1F65213D2">>},
  {<<"uuid">>, <<"D5F12B5814F9E8EA27A9C2527C35FF3661294FA51CA8E43CC15038EFE519E58B">>},
- {<<"worker_pool">>, <<"B90273074898FA89434317991E00884DBBAFFAB5BFD964A7586317CD16FB18D4">>}]}
+ {<<"worker_pool">>, <<"2CD7B2C289B900940297D283922D7E119C540CB8F29B5254639ABB9BFB100CAE">>}]}
 ].
