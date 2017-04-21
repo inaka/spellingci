@@ -7,7 +7,7 @@ RUN echo \
     > /etc/apt/sources.list
 
 ENV DEPENDENCY_PACKAGES=""
-ENV BUILD_PACKAGES="build-essential libwxbase3.0-0 libwxgtk3.0-0 libncurses5-dev openssl libssl-dev fop wget git vim mysql-client monit"
+ENV BUILD_PACKAGES="build-essential libwxbase3.0-0 libwxgtk3.0-0 libncurses5-dev openssl libssl-dev fop wget git vim mysql-client monit curl"
 
 RUN apt-get clean &&\
     apt-get -y update && \
