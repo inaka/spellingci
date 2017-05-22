@@ -69,8 +69,8 @@ process_request(#{body := Body} = Request) ->
     User ->
       Token = spellingci_users:github_token(User),
       StatusCred = egithub:oauth(Token),
-      Name = "SpellingCI",
-      Context = "spellingCI",
+      Name = "Sheldon",
+      Context = "SpellingCI",
       egithub_webhook:event(Mod, StatusCred, Name, Context, Cred, Request)
   end.
 
