@@ -41,9 +41,10 @@ trails() ->
 %% Sumo Rest
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec handle_get(cowboy_req:req(), sr_entities_handler:state()) ->
-  {iodata(), cowboy_req:req(), sr_entities_handler:state()}.
-handle_get(Req, #{user := User} = State) ->
+-spec handle_get(cowboy_req:req(), sr_state:state()) ->
+  {iodata(), cowboy_req:req(), sr_state:state()}.
+handle_get(Req, State) ->
+  User = sr_state:retrieve(user, State, undefined),
   Repos = spellingci_repos_repo:sync(User),
   Reply = [spellingci_repos:to_json(Repo) || Repo <- Repos],
   JSON  = sr_json:encode(Reply),

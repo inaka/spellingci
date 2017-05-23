@@ -55,8 +55,8 @@ trails() ->
 %% Sumo Rest
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec handle_post(cowboy_req:req(), sr_entities_handler:state()) ->
-  {halt | true, cowboy_req:req(), sr_entities_handler:state()}.
+-spec handle_post(cowboy_req:req(), sr_state:state()) ->
+  {halt | true, cowboy_req:req(), sr_state:state()}.
 handle_post(Req, State) ->
   case common_handler(on, Req, State) of
     {ok, Result} ->
@@ -67,8 +67,8 @@ handle_post(Req, State) ->
   end.
 
 
--spec delete_resource(cowboy_req:req(), sr_single_entity_handler:state()) ->
-  {boolean(), cowboy_req:req(), sr_single_entity_handler:state()}.
+-spec delete_resource(cowboy_req:req(), sr_state:state()) ->
+  {boolean(), cowboy_req:req(), sr_state:state()}.
 delete_resource(Req, State) ->
   case common_handler(off, Req, State) of
     {ok, Result} ->
@@ -84,13 +84,12 @@ delete_resource(Req, State) ->
 
 -spec common_handler( spellingci_repos:status()
                     , cowboy_req:req()
-                    , sr_single_entity_handler:state()) ->
-  {true , cowboy_req:req(), sr_single_entity_handler:state()} |
-  { error
-  , {non_neg_integer(), cowboy_req:req(), sr_single_entity_handler:state()}
-  }.
-common_handler(RepoState, Req, #{user := User} = State) ->
+                    , sr_state:state()) ->
+  {true , cowboy_req:req(), sr_state:state()} |
+  {error, {non_neg_integer(), cowboy_req:req(), sr_state:state()}}.
+common_handler(RepoState, Req, State) ->
   try
+    User = sr_state:retrieve(user, State, undefined),
     {ok, Body, Req2} = cowboy_req:body(Req),
     RepoDecoded = sr_json:decode(Body),
     {ok, Repo} = spellingci_repos:from_json(RepoDecoded),

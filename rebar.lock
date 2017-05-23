@@ -19,10 +19,7 @@
  {<<"sheldon">>,{pkg,<<"sheldon">>,<<"0.1.3">>},0},
  {<<"ssl_verify_fun">>,{pkg,<<"ssl_verify_fun">>,<<"1.1.0">>},1},
  {<<"sumo_db">>,{pkg,<<"sumo_db">>,<<"0.6.4">>},0},
- {<<"sumo_rest">>,
-  {git,"https://github.com/inaka/sumo_rest.git",
-       {ref,"ac4a75ce315fb6d288852cbdc0396eaf87cb18fd"}},
-  0},
+ {<<"sumo_rest">>,{pkg,<<"sumo_rest">>,<<"0.3.4">>},0},
  {<<"trails">>,{pkg,<<"trails">>,<<"0.2.0">>},1},
  {<<"uuid">>,{pkg,<<"uuid_erl">>,<<"1.5.2">>},0},
  {<<"worker_pool">>,{pkg,<<"worker_pool">>,<<"2.2.3">>},1}]}.
@@ -48,6 +45,7 @@
  {<<"sheldon">>, <<"9C68327A9297C73077D490F7268F8D2704C8CBB17EE0B8272C5615F895E4E5B1">>},
  {<<"ssl_verify_fun">>, <<"EDEE20847C42E379BF91261DB474FFBE373F8ACB56E9079ACB6038D4E0BF414F">>},
  {<<"sumo_db">>, <<"BA655B9E83FDB6C46766EEBF0F01277ED1FA0CC642A6049862097ADD8AFE0080">>},
+ {<<"sumo_rest">>, <<"A2F6B1DE84EBD06AECA94CEA22AD9146E6E861F9726C2873C9ACB6C9A400AE55">>},
  {<<"trails">>, <<"8A26C8F32B2A4D317830FAF55F034CC532D849547686806B83063AA1F65213D2">>},
  {<<"uuid">>, <<"D5F12B5814F9E8EA27A9C2527C35FF3661294FA51CA8E43CC15038EFE519E58B">>},
  {<<"worker_pool">>, <<"2CD7B2C289B900940297D283922D7E119C540CB8F29B5254639ABB9BFB100CAE">>}]}
