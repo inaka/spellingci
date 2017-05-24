@@ -19,15 +19,17 @@
 %% Cowboy
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec is_authorized(cowboy_req:req(), sr_entities_handler:state()) ->
-  {Result, cowboy_req:req(), sr_entities_handler:state()} when
+-spec is_authorized(cowboy_req:req(), sr_state:state()) ->
+  {Result, cowboy_req:req(), sr_state:state()} when
     Result :: true | {false, binary()}.
 is_authorized(Req, State) ->
   {Token, _} = cowboy_req:cookie(<<"token">>, Req, undefined),
   case spellingci_sessions_repo:valid_session(Token) of
-    false        -> {{false, <<"Realm=spellingci">>}, Req, State};
+    false ->
+      {{false, <<"Realm=spellingci">>}, Req, State};
     {true, Session} ->
       UserId = spellingci_sessions:user_id(Session),
       User = spellingci_users_repo:find(UserId),
-      {true, Req, State#{user => User}}
+      State2 = sr_state:set(user, User, State),
+      {true, Req, State2}
   end.
