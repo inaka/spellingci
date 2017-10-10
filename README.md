@@ -10,9 +10,6 @@ You can create your own server or use the one managed by [Inaka](http://www.inak
 **Note** Users should create a `config/app.config` file in order to run `spellingCI`, this config file should be implemented following the `config/app.config.template`
 
 ## Contact Us
-For **questions** or **general comments** regarding the use of this library,
-please use our public [hipchat room](http://inaka.net/hipchat).
-
 If you find any **bugs** or have a **problem** while using this library, please
 [open an issue](https://github.com/inaka/spellingci/issues/new) in this repo
 (or a pull request :)).
